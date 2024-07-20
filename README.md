@@ -1,6 +1,8 @@
 # renderLoop
 Loop de videos al toke
 
+Al ejecutar el comando por primera vez te va a crear las carpetas necesarias para poder crear videos con el script
+
 # mac os:
 
 :: Instala Python utilizando Homebrew
@@ -15,7 +17,7 @@ brew install ffmpeg
 
 pip3 install pydub requests google-auth google-auth-oauthlib google-api-python-client
 
-:: Ejecuta el script on
+:: Ejecuta el script con
 
 python3 render_module.py
 
@@ -38,6 +40,6 @@ choco install ffmpeg
 pip install pydub requests google-auth google-auth-oauthlib google-api-python-client
 
 
-:: Ejecuta el script
+:: Ejecuta el script con
 
 python render_module.py
