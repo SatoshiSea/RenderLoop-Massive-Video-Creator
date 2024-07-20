@@ -13,12 +13,7 @@ brew install ffmpeg
 
 :: Instala la biblioteca, que se utiliza para manipular audio y demas
 
-pip3 install pydub
-pip3 install requests
-pip3 install tkinter
-pip3 install google-auth
-pip3 install google-auth-oauthlib
-pip3 install google-api-python-client
+pip3 install pydub requests google-auth google-auth-oauthlib google-api-python-client
 
 :: Ejecuta el script on
 
@@ -40,12 +35,7 @@ choco install ffmpeg
 
 :: Instala la biblioteca, que se utiliza para manipular audio y demas
 
-pip install pydub
-pip install requests
-pip install tkinter
-pip install google-auth
-pip install google-auth-oauthlib
-pip install google-api-python-client
+pip install pydub requests google-auth google-auth-oauthlib google-api-python-client
 
 
 :: Ejecuta el script
