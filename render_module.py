@@ -153,8 +153,8 @@ def randomize_names():
         "Rest", "Glimmering", "Lull", "Soothingly", "Reflective"
     ]
 
-    part1 = ' '.join(random.sample(words, random.randint(2)))
-    part2 = ' '.join(random.sample(words, random.randint(2)))
+    part1 = ' '.join(random.sample(words, 2))
+    part2 = ' '.join(random.sample(words, 2))
     title = f"{part1} - {part2}"
     return title
 
@@ -201,7 +201,7 @@ def render_massive_images(audio_folder_path, image_folder_path, combined_audio_f
         clear_folder(image_folder_path)
         print("Limpieza de carpeta de imagenes al usar api")
         print(f"Creando {api_execution} imagenes con la api, por favor espere...")
-        create_images_ia(api_key, url_api, api_endpoint, api_prompt, api_width, api_height, api_sampler, api_model_id, api_negative_prompt, api_seed, api_format, api_guidance, api_transparent_background, api_execution)
+        create_images_ia(api_key, url_api, api_endpoint, api_prompt, api_width, api_height, api_sampler, api_model_id, api_negative_prompt, api_seed, api_format, api_guidance, api_transparent_background, api_execution, image_folder_path)
 
     image_files = [f for f in os.listdir(image_folder_path) if f.endswith(('.png', '.jpg', '.jpeg', '.gif'))]
     audio_files = [f for f in os.listdir(audio_folder_path) if f.endswith(('.mp3', '.wav', '.aac'))]
@@ -307,7 +307,7 @@ def render_image(audio_folder_path, image_folder_path, combined_audio_folder, fi
         clear_folder(image_folder_path)
         print("Limpieza de carpeta de imagenes al usar api")
         print("Creando imagenes con api")
-        create_images_ia(api_key, url_api, api_endpoint, api_prompt, api_width, api_height, api_sampler, api_model_id, api_negative_prompt, api_seed, api_format, api_guidance, api_transparent_background, 1)
+        create_images_ia(api_key, url_api, api_endpoint, api_prompt, api_width, api_height, api_sampler, api_model_id, api_negative_prompt, api_seed, api_format, api_guidance, api_transparent_background, 1, image_folder_path)
 
     image_file = [f for f in os.listdir(image_folder_path) if f.endswith(('.png', '.jpg', '.jpeg', '.gif'))][0]
     if len(image_file) == 0:
@@ -347,11 +347,7 @@ def finaly_image_render(image_folder_path, combined_audio_folder, output, resolu
 
             command_step1 = [
                 'ffmpeg', '-y', '-loop', '1', '-i', image_folder_path, '-i', overlay_video,
-                '-filter_complex', f'''
-                    [0:v]scale={width}:{height}[bg];
-                    [1:v]scale={width}:{height},format=gbrp,colorchannelmixer=aa={opacity}[ovr];
-                    [bg][ovr]blend=all_mode={blend_mode}:shortest=1[v];
-                ''',
+                '-filter_complex', f'[0:v]scale={width}:{height}[bg];[1:v]scale={width}:{height},format=gbrp,colorchannelmixer=aa={opacity}[ovr];[bg][ovr]blend=all_mode={blend_mode}:shortest=1[v]',
                 '-map', '[v]',
                 '-c:v', encoder, '-preset', preset, '-pix_fmt', pix_fmt, '-b:v', video_bitrate,
                 '-r', f'{fps}', '-threads', str(cores), '-aspect', aspect_ratio, temp
@@ -620,7 +616,7 @@ def finaly_video_render(video_folder_path, combined_audio_folder, output, resolu
 ################## FUNCIONES EXTERNAS ################
 
 # funcion para generar imagenes masivas con dezgo mediante su api
-def create_images_ia(api_key, url_api, api_endpoint, api_prompt, api_width, api_height, api_sampler, api_model_id, api_negative_prompt, api_seed, api_format, api_guidance, api_transparent_background, api_execution, retry_delay=5, max_retries=3):
+def create_images_ia(api_key, url_api, api_endpoint, api_prompt, api_width, api_height, api_sampler, api_model_id, api_negative_prompt, api_seed, api_format, api_guidance, api_transparent_background, api_execution, image_folder_path, retry_delay=5, max_retries=3):
     url = f"{url_api}/{api_endpoint}"
     headers = {
         'X-Dezgo-Key': api_key
@@ -978,7 +974,7 @@ def ask_user_option(prompt, options):
 def start_render():
 
     # Variables y funciones generales
-    fps = 25 # 25 o 30
+    fps = 30 # 25 o 30
     resolution = "1920x1080" # '1920x1080','1280x720','854x480','640x360'
     aspect_ratio = "16:9" # '16:9','4:3','1:1'
     video_bitrate = "3000k" # '1000k','2000k','3000k','4000k'
@@ -995,7 +991,7 @@ def start_render():
 
     invert_video = True # True o False
 
-    encoder = "h264_qsv" # 'libx264','h264_nvenc','h264_qsv','h264_amf','h264_videotoolbox'
+    encoder = "libx264" # 'libx264','h264_nvenc','h264_qsv','h264_amf','h264_videotoolbox'
     quality_level = 2  # 1 es la mejor calidad, 3 es la más baja calidad
 
     # Api para crear imagenes
@@ -1059,7 +1055,7 @@ def start_render():
         resolution = ask_user_option('Selecciona la resolución:', ['1920x1080', '1280x720', '854x480', '640x360'])
         aspect_ratio = ask_user_option('Selecciona la relación de aspecto:', ['16:9', '4:3', '1:1'])
         video_bitrate = ask_user_option('Selecciona el bitrate del video:', ['1000k', '2000k', '3000k', '4000k'])
-        encoder = ask_user_option('Selecciona el codificador:', ['libx264', 'h264_nvenc', 'h264_qsv', 'h264_amf', 'h264_videotoolbox'])
+        encoder = ask_user_option('Selecciona el codificador de video:', ['libx264', 'h264_nvenc', 'h264_qsv', 'h264_amf', 'h264_videotoolbox'])
         quality_level = int(ask_user_option('Selecciona el nivel de calidad 3 (alta), 2 (media) o 1 (baja):', [1, 2, 3]))
         audio_quality = ask_user_option('Selecciona la calidad del audio:', ['128k', '192k', '320k'])
         fade_duration = int(input('Ingresa la duración del fade en milisegundos  (ej. 3000):'))
@@ -1075,7 +1071,7 @@ def start_render():
         if render_type == 'render_video' or render_type == 'render_video_massive':
             invert_video = ask_user_option('¿Quieres invertir el video?', [True, False])
 
-        if render_type == 'render_image_massive' or render_type == 'render_video_massive':
+        if render_type == 'render_image_massive' or render_type == 'render_image':
             use_api_DEZGO = ask_user_option('¿Usar la API DEZGO para crear imágenes?', [True, False])
             if use_api_DEZGO:
                 api_prompt = input('Ingresa el prompt de la API: ')
@@ -1087,7 +1083,7 @@ def start_render():
         upload_files_youtube = ask_user_option('¿Subir archivos a YouTube?', [True, False]) 
 
     # preguntamos si queres empezar el proceso y mostramos los datos de las variables globales
-    if render_type != "5":
+    if render_type != "subir_a_youtube":
         print(f'Tipo de render: {render_type}')
         print(f'Resolution: {resolution}')
         print(f'FPS: {fps}')
@@ -1097,7 +1093,7 @@ def start_render():
         print(f'Encoder: {encoder}')
         print(f"Calidad: {quality_level}")
         print(f'Aspect ratio: {aspect_ratio}')
-        if render_type == 'render_image_massive' or render_type == 'render_video_massive':
+        if render_type == 'render_image_massive' or render_type == 'render_image':
             print(f'Usando api imagenes: {use_api_DEZGO}')
             if use_api_DEZGO:
                 print(f'Cantidad de imagenes a generar: {api_execution}')
@@ -1118,9 +1114,9 @@ def start_render():
     else:
         print(f'Seleccionaste subir todos los videos finales a Youtube')
 
-    init = input("¿Deseas comenzar el proceso? (s/n): ")
+    init = ask_user_option('¿Quieres iniciar el render?', ['si, iniciar', 'no, detener'])
 
-    if init.lower() == "s":
+    if init.lower() == "si, iniciar":
         loading_effect()
         print('\n')
 
