@@ -616,7 +616,7 @@ def create_audios_from_api(suno_prompt, suno_execution, insrtumental, suno_wait_
         # Esperar hasta que los audios estén listos
         for _ in range(60):
             data = get_audio_information(ids)
-            if data[0]["status"] == 'streaming' and data[1]["status"] == 'streaming':
+            if data[0]["status"] == 'complete' and data[1]["status"] == 'complete':
                 audio_url_1 = data[0]['audio_url']
                 audio_url_2 = data[1]['audio_url']
                 
@@ -637,10 +637,10 @@ def create_audios_from_api(suno_prompt, suno_execution, insrtumental, suno_wait_
                 
                 if duration_1 < 60:
                     print(f"Duración de {file_name_1} demasiado corta, se eliminara")
-                    os.remove(file_name_1)
+                    os.remove(os.path.join(audio_folder_path, file_name_1))
                 if duration_2 < 60:
                     print(f"Duración de {file_name_2} demasiado corta, se eliminara")
-                    os.remove(file_name_2)
+                    os.remove(os.path.join(audio_folder_path, file_name_2))
             
                 break
             else:
@@ -1087,19 +1087,19 @@ def start_render():
     invert_video = True # True o False
 
     encoder = "h264_qsv" # 'libx264','h264_nvenc','h264_qsv','h264_amf','h264_videotoolbox'
-    quality_level = 3  # 1 es la mejor calidad, 3 es la más baja calidad
+    quality_level = 2  # 1 es la mejor calidad, 3 es la más baja calidad
 
     # Api para crear imagenes
     use_api_DEZGO = True # True o False
     api_prompt = "Landscape realistic 4k high quality" # prompt de la api
-    api_execution = 1 # cantidad de imagenes que se crearan con la api
+    api_execution = 50 # cantidad de imagenes que se crearan con la api
 
     # Variables de configuración suno
     use_suno_api = True
     suno_prompt = "Lofi ambient chill"
     insrtumental = True
     suno_wait_audio = True
-    suno_execution = 5
+    suno_execution = 200
 
     use_audios_drive = False # True o False
     upload_files_drive = False # True o False
@@ -1151,7 +1151,7 @@ def start_render():
 
     # verificando carpetas in y out
     print('Checking folders...')
-    create_folders()
+    create_folders(base_path)
     print('\n')
 
     render_type = ask_user_option('¿Que tipo de render quieres?', ['render_image', 'render_video', 'render_image_massive', 'render_video_massive', 'upload_youtube', 'generate_images', 'generate_audios'])
