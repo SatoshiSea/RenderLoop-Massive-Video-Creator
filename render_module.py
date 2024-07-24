@@ -189,12 +189,6 @@ def get_audio_duration(file_path):
 
 def render_massive_images(audio_folder_path, image_folder_path, combined_audio_folder, final_video_folder, fade_duration, resolution, fps, video_bitrate, audio_quality, overlay_video, use_api_DEZGO, api_prompt, api_execution, encoder, quality_level, aspect_ratio, use_audios_drive, upload_files_drive, upload_files_youtube, randomize_audios, randomize_name, overlay, opacity, blend_mode, preset, pix_fmt, cores):
 
-    # Limpiar carpetas de audios combinados y videos finales
-    clear_folder(combined_audio_folder)
-    clear_folder(final_video_folder)
-
-    print("Limpieza de carpetas de audios combinados y videos finales")
-
     if use_audios_drive:
         print("Descargando audios de drive")
         service =authenticate()
@@ -203,8 +197,10 @@ def render_massive_images(audio_folder_path, image_folder_path, combined_audio_f
         print("No se descargaran audios de drive, se usaran los de la carpeta 'audios'")
 
     if use_api_DEZGO:
-        clear_folder(image_folder_path)
-        print("Limpieza de carpeta de imagenes al usar api")
+        clear = ask_user_option("¿Deseas limpiar la carpeta de imagenes?", [True, False])
+        if clear:
+            clear_folder(image_folder_path)
+            print("Limpieza de carpeta de imagenes al usar api")
         print(f"Creando {api_execution} imagenes con la api, por favor espere...")
         create_images_ia(api_key, url_api, api_endpoint, api_prompt, api_width, api_height, api_sampler, api_model_id, api_negative_prompt, api_seed, api_format, api_guidance, api_transparent_background, api_execution, image_folder_path)
 
@@ -270,12 +266,6 @@ def render_massive_images(audio_folder_path, image_folder_path, combined_audio_f
         print("No se subiran los archivos, pero si se guardaron en la carpeta 'out/videos'")
         
 def render_image(audio_folder_path, image_folder_path, combined_audio_folder, final_video_folder, fade_duration, resolution, fps, video_bitrate, audio_quality, overlay_video, use_api_DEZGO, api_prompt, api_execution, encoder, quality_level, aspect_ratio, use_audios_drive, upload_files_drive, upload_files_youtube, randomize_audios, randomize_name, overlay, opacity, blend_mode, preset, pix_fmt, cores):
-    
-    # Limpiar carpetas de audios combinados y videos finales
-    clear_folder(combined_audio_folder)
-    clear_folder(final_video_folder)
-
-    print("Limpieza de carpetas de audios combinados y videos finales")
 
     if use_audios_drive:
         print("Descargando audios de drive")
@@ -309,8 +299,11 @@ def render_image(audio_folder_path, image_folder_path, combined_audio_folder, fi
     combined_audio.export(combined_audio_path, format="mp3")
 
     if use_api_DEZGO:
-        clear_folder(image_folder_path)
-        print("Limpieza de carpeta de imagenes al usar api")
+        clear = ask_user_option("¿Deseas limpiar la carpeta de imagenes?", [True, False])
+        if clear:
+            clear_folder(image_folder_path)
+            print("Limpieza de carpeta de imagenes al usar api")
+
         print("Creando imagenes con api")
         create_images_ia(api_key, url_api, api_endpoint, api_prompt, api_width, api_height, api_sampler, api_model_id, api_negative_prompt, api_seed, api_format, api_guidance, api_transparent_background, 1, image_folder_path)
 
@@ -397,12 +390,6 @@ def finaly_image_render(image_folder_path, combined_audio_folder, output, resolu
 
 def render_massive_videos(audio_folder_path, video_folder_path, combined_audio_folder, inverted_folder_path, final_video_folder, fade_duration, resolution, fps, video_bitrate, audio_quality, overlay_video, invert_video, encoder, quality_level, aspect_ratio, use_audios_drive, upload_files_drive, upload_files_youtube, randomize_audios, randomize_name, overlay, opacity, blend_mode, preset, pix_fmt, cores):
       
-    clear_folder(combined_audio_folder)
-    clear_folder(final_video_folder)
-    clear_folder(inverted_folder_path)
-
-    print("Limpieza de carpetas de audios combinados y videos finales")
-
     if use_audios_drive:
         print("Descargando audios de drive")
         service =authenticate()
@@ -477,12 +464,6 @@ def render_massive_videos(audio_folder_path, video_folder_path, combined_audio_f
         print("No se subiran los archivos, pero si se guardaron en la carpeta 'out/videos'")
 
 def render_video(video_folder_path, audio_folder_path, combined_audio_folder, inverted_folder_path, final_video_folder, fade_duration, resolution, fps, video_bitrate, audio_quality, overlay_video, invert_video, encoder, quality_level, aspect_ratio, use_audios_drive, upload_files_drive, upload_files_youtube, randomize_audios, randomize_name, overlay, opacity, blend_mode, preset, pix_fmt, cores):
-    
-    clear_folder(combined_audio_folder)
-    clear_folder(final_video_folder)
-    clear_folder(inverted_folder_path)
-
-    print("Limpieza de carpetas de audios combinados y videos finales")
     
     if use_audios_drive:
         print("Descargando audios de drive")
@@ -647,12 +628,12 @@ def create_audios_from_api(suno_prompt, suno_execution, insrtumental, suno_wait_
                 print(f"{data[1]['id']} ==> {audio_url_2}")
 
                 # Descargar los audios
-                download_audio(audio_url_1, file_name_1)
-                download_audio(audio_url_2, file_name_2)
+                download_audio(audio_url_1, file_name_1, audio_folder_path)
+                download_audio(audio_url_2, file_name_2, audio_folder_path)
                 
                 # Verificar duración de los audios
-                duration_1 = get_audio_duration(file_name_1)
-                duration_2 = get_audio_duration(file_name_2)
+                duration_1 = get_audio_duration(os.path.join(audio_folder_path, file_name_1))
+                duration_2 = get_audio_duration(os.path.join(audio_folder_path, file_name_2))
                 
                 if duration_1 < 60:
                     print(f"Duración de {file_name_1} demasiado corta, se eliminara")
@@ -1082,7 +1063,7 @@ def ask_user_option(prompt, options):
     print(f"## {prompt} ##")
     for i, option in enumerate(options, 1):
         print(f'{i} - {option}')
-    choice = int(input('Selecciona una opción: '))
+    choice = int(input('Selecciona el número correspondiente: '))
     return options[choice - 1]
 
 def start_render():
@@ -1099,7 +1080,7 @@ def start_render():
     randomize_name = True # True o False
 
     overlay = True # True o False
-    overlay_name = "overlay.mp4" # archivo overlay a usar
+    overlay_name = "vhs-lines.mp4" # 'particles.mp4', 'vhs.mp4', 'vhs-lines.mp4', 'dust.mp4', 'dust-final.mp4'
     opacity = 1 # entre 0 y 1
     blend_mode = "addition" # 'addition','multiply','screen','overlay','darken','lighten','color-dodge','color-burn','hard-light','soft-light','difference','exclusion','hue','saturation','color','luminosity'
 
@@ -1167,9 +1148,45 @@ def start_render():
     print('Welcome to render module v1.0.0')
     loading_effect()
     print('\n')
-    config = ask_user_option('¿Quieres configurar el render a continuación?', [True, False])
-    render_type = ask_user_option('¿Que tipo de render quieres?', ['render_image', 'render_video', 'render_image_massive', 'render_video_massive', 'subir_a_youtube',])
+
+    # verificando carpetas in y out
+    print('Checking folders...')
+    create_folders()
     print('\n')
+
+    render_type = ask_user_option('¿Que tipo de render quieres?', ['render_image', 'render_video', 'render_image_massive', 'render_video_massive', 'upload_youtube', 'generate_images', 'generate_audios'])
+    print('\n')
+    # eliminacion de carpetas
+    delete_folders = ask_user_option('Es necesario eliminar el contenido de las carpetas OUT(aun que esten vacias), continuamos?', [True, False])
+
+    if delete_folders:
+        print('Deleting folders...')
+        clear_folder(final_video_folder)
+        clear_folder(combined_audio_folder)
+        clear_folder(inverted_folder_path)
+    else :
+        print('No se eliminará el contenido de las carpetas OUT')
+        print('Por favor asegurate de que el contenido de las carpetas OUT esté limpio antes de renderizar')
+        print('Proceso cancelado')
+        return
+
+    print('\n')
+
+    delete_folders = ask_user_option('¿Quieres eliminar el contenido de las carpetas IN (usar en caso de usar las IA)?', [True, False])
+
+    if delete_folders:
+        print('Deleting folders...')
+        if ask_user_option('¿Quieres eliminar el contenido de la carpeta imagenes (recomendado si usas DEZGO)?', [True, False]):
+            clear_folder(image_folder_path)
+        if ask_user_option('¿Quieres eliminar el contenido de la carpeta audios (recomendado si usas SUNO)?', [True, False]):
+            clear_folder(audio_folder_path)
+        if ask_user_option('¿Quieres eliminar el contenido de la carpeta videos?', [True, False]):
+            clear_folder(video_folder_path)
+    print('\n')
+
+    if render_type != 'upload_youtube' or render_type != 'generate_images' or render_type != 'generate_audios':
+        config = ask_user_option('¿Quieres configurar el render a continuación?', [True, False])
+
     if config:
         # Preguntas para las variables generales
         fps = int(ask_user_option('Selecciona los FPS:', [20, 25, 30, 60]))
@@ -1185,7 +1202,7 @@ def start_render():
         
         overlay = ask_user_option('¿Quieres usar un overlay?', [True, False])
         if overlay:
-            overlay_name = input('Ingresa el nombre del archivo de overlay (ej. overlay.mp4): ')
+            overlay_name = ask_user_option('Ingresa el nombre del overlay:', ['snow.mp4', 'particles.mp4', 'vhs.mp4', 'vhs-lines.mp4', 'dust.mp4', 'dust-final.mp4'])
             opacity = float(input('Ingresa la opacidad del overlay (0 a 1): '))
             blend_mode = ask_user_option('Selecciona el modo de mezcla:', ['addition', 'multiply', 'screen', 'overlay', 'darken', 'lighten', 'hard-light', 'soft-light'])
 
@@ -1204,12 +1221,12 @@ def start_render():
             suno_execution = int(input('Ingresa la cantidad de audios a crear con la API Suno (Genera 2 audios por ejecución): '))
 
         # Variables adicionales
-        use_audios_drive = ask_user_option('¿Usar audios de Google Drive?', [True, False])
-        upload_files_drive = ask_user_option('¿Subir archivos a Google Drive?', [True, False]) 
-        upload_files_youtube = ask_user_option('¿Subir archivos a YouTube?', [True, False]) 
+        #use_audios_drive = ask_user_option('¿Usar audios de Google Drive?', [True, False])
+        #upload_files_drive = ask_user_option('¿Subir archivos a Google Drive?', [True, False]) 
+        #upload_files_youtube = ask_user_option('¿Subir archivos a YouTube?', [True, False]) 
 
     # preguntamos si queres empezar el proceso y mostramos los datos de las variables globales
-    if render_type != "subir_a_youtube":
+    if render_type != "upload_youtube" or render_type != "generate_images" or render_type != "generate_audios":
         print(f'Tipo de render: {render_type}')
         print(f'Resolution: {resolution}')
         print(f'FPS: {fps}')
@@ -1237,12 +1254,31 @@ def start_render():
         if use_suno_api:
             print(f'Prompt de API Suno: {suno_prompt}')
             print(f'Cantidad de audios a generar (x2): {suno_execution * 2}')
-        print(f'Usando audios de drive: {use_audios_drive}')
-        print(f'Subiendo archivos al drive: {upload_files_drive}')
-        print(f'Descargar archivos de audio drive: {use_audios_drive}')
-        print(f'Subiendo videos finales a Youtube: {upload_files_youtube}')
-    else:
+        #print(f'Usando audios de drive: {use_audios_drive}')
+        #print(f'Subiendo archivos al drive: {upload_files_drive}')
+        #print(f'Descargar archivos de audio drive: {use_audios_drive}')
+        #print(f'Subiendo videos finales a Youtube: {upload_files_youtube}')
+    elif render_type == "upload_youtube":
         print(f'Seleccionaste subir todos los videos finales a Youtube')
+    elif render_type == "generate_images":
+        print(f'Seleccionaste generar imagenes')
+        use_api_DEZGO = True
+        api_prompt = input('Ingresa el prompt de la API: ')
+        api_execution = int(input('Ingresa la cantidad de imágenes a crear con la API: '))
+        print('\n')
+        print(f'Usando api imagenes: {use_api_DEZGO}')
+        print(f'Prompt de imagenes: {api_prompt}')
+        print(f'Ejecuciones de api imagenes: {api_execution}')
+    elif render_type == "generate_audios":
+        print(f'Seleccionaste generar audios')
+        use_suno_api = True
+        suno_prompt = input('Ingresa el prompt de la API Suno: ')
+        suno_execution = int(input('Ingresa la cantidad de audios a crear con la API Suno (Genera 2 audios por ejecución): '))
+        print('\n')
+        print(f'Usando API Suno: {use_suno_api}')
+        print(f'Prompt de API Suno: {suno_prompt}')
+        print(f'Ejecuciones de API Suno totales (X2): {suno_execution * 2}')
+
 
     init = ask_user_option('¿Quieres iniciar el render?', ['si, iniciar', 'no, detener'])
 
@@ -1250,22 +1286,29 @@ def start_render():
         loading_effect()
         print('\n')
 
-        if use_suno_api:
+        if render_type != "generate_audios" and use_suno_api:
             create_audios_from_api(suno_prompt, suno_execution, insrtumental, suno_wait_audio, audio_folder_path, base_api_suno_url)
+            
+        if render_type == "generate_audios":
 
-        if render_type == "subir_a_youtube":
+            create_audios_from_api(api_prompt, api_execution, insrtumental, suno_wait_audio, audio_folder_path, base_api_suno_url)
+        elif render_type == "generate_images":
+
+            create_images_ia(api_key, url_api, api_endpoint, api_prompt, api_width, api_height, api_sampler, api_model_id, api_negative_prompt, api_seed, api_format, api_guidance, api_transparent_background, api_execution, image_folder_path)
+        elif render_type == "upload_youtube":
+
             upload_all_videos_to_youtube(final_video_folder)
         elif render_type == "render_video":
-            create_folders(base_path)
+
             render_video(video_folder_path, audio_folder_path, combined_audio_folder, inverted_folder_path, final_video_folder, fade_duration, resolution, fps, video_bitrate, audio_quality, overlay_video, invert_video, encoder, quality_level, aspect_ratio, use_audios_drive, upload_files_drive, upload_files_youtube, randomize_audios, randomize_name, overlay, opacity, blend_mode, preset, pix_fmt, cores)
         elif render_type == "render_image":
-            create_folders(base_path)
+
             render_image(audio_folder_path, image_folder_path, combined_audio_folder, final_video_folder, fade_duration, resolution, fps, video_bitrate, audio_quality, overlay_video, use_api_DEZGO, api_prompt, api_execution, encoder, quality_level, aspect_ratio, use_audios_drive, upload_files_drive, upload_files_youtube, randomize_audios, randomize_name, overlay, opacity, blend_mode, preset, pix_fmt, cores)
         elif render_type == "render_image_massive":
-            create_folders(base_path)
+
             render_massive_images(audio_folder_path, image_folder_path, combined_audio_folder, final_video_folder, fade_duration, resolution, fps, video_bitrate, audio_quality, overlay_video, use_api_DEZGO, api_prompt, api_execution, encoder, quality_level, aspect_ratio, use_audios_drive, upload_files_drive, upload_files_youtube, randomize_audios, randomize_name, overlay, opacity, blend_mode, preset, pix_fmt, cores)
         elif render_type == "render_video_massive":
-            create_folders(base_path)
+
             render_massive_videos(audio_folder_path, video_folder_path, combined_audio_folder, inverted_folder_path, final_video_folder, fade_duration, resolution, fps, video_bitrate, audio_quality, overlay_video, invert_video, encoder, quality_level, aspect_ratio, use_audios_drive, upload_files_drive, upload_files_youtube, randomize_audios, randomize_name, overlay, opacity, blend_mode, preset, pix_fmt, cores)
 
     else:
