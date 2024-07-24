@@ -48,7 +48,7 @@ python render_module.py
 
 :: Instalar DEPENDENCIAS
 
-cd suno-api
+cd api-suno
 
 npm install
 
