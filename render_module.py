@@ -181,6 +181,10 @@ def add_emoticon_to_title(title, position='start'):
     
     return new_title
 
+def get_audio_duration(file_path):
+    audio = AudioSegment.from_file(file_path)
+    return len(audio) / 1000  # duración en segundos
+
 # Render Images
 
 def render_massive_images(audio_folder_path, image_folder_path, combined_audio_folder, final_video_folder, fade_duration, resolution, fps, video_bitrate, audio_quality, overlay_video, use_api_DEZGO, api_prompt, api_execution, encoder, quality_level, aspect_ratio, use_audios_drive, upload_files_drive, upload_files_youtube, randomize_audios, randomize_name, overlay, opacity, blend_mode, preset, pix_fmt, cores):
@@ -643,11 +647,23 @@ def create_audios_from_api(suno_prompt, suno_execution, insrtumental, suno_wait_
                 print(f"{data[1]['id']} ==> {audio_url_2}")
 
                 # Descargar los audios
-                download_audio(audio_url_1, file_name_1, audio_folder_path)
-                download_audio(audio_url_2, file_name_2, audio_folder_path)
+                download_audio(audio_url_1, file_name_1)
+                download_audio(audio_url_2, file_name_2)
+                
+                # Verificar duración de los audios
+                duration_1 = get_audio_duration(file_name_1)
+                duration_2 = get_audio_duration(file_name_2)
+                
+                if duration_1 < 60:
+                    print(f"Duración de {file_name_1} demasiado corta, se eliminara")
+                    os.remove(file_name_1)
+                if duration_2 < 60:
+                    print(f"Duración de {file_name_2} demasiado corta, se eliminara")
+                    os.remove(file_name_2)
+            
                 break
             else:
-                time.sleep(20)
+                time.sleep(8)
 
 def custom_generate_audio(payload):
     url = f"{base_api_suno_url}/api/custom_generate"
