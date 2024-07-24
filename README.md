@@ -17,6 +17,18 @@ brew install python
 brew install ffmpeg
 ```
 
+:: Crea un entorno virtual en la ruta especificada
+
+```bash
+python3 -m venv path/to/venv
+```
+
+:: Activa el entorno virtual (en macOS/Linux)
+
+```bash
+source path/to/venv/bin/activate
+```
+
 :: Instala la biblioteca, que se utiliza para manipular audio y demas
 
 ```bash
@@ -46,6 +58,18 @@ choco install python
 
 ```bash
 choco install ffmpeg
+```
+
+:: Crea un entorno virtual en la ruta especificada
+
+```bash
+python -m venv path\to\venv
+```
+
+:: Activa el entorno virtual (en Windows)
+
+```bash
+path\to\venv\Scripts\activate
 ```
 
 :: Instala la biblioteca, que se utiliza para manipular audio y demas
