@@ -39,7 +39,19 @@ choco install ffmpeg
 
 pip install pydub requests google-auth google-auth-oauthlib google-api-python-client
 
-
 :: Ejecuta el script con
 
 python render_module.py
+
+
+# SUNO API:
+
+:: Instalar DEPENDENCIAS
+
+cd suno-api
+
+npm install
+
+:: Ejecutar server localmente
+
+npm run dev

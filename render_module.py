@@ -2,14 +2,11 @@ import os
 import sys
 import time
 import subprocess
-import time
 from pydub import AudioSegment
 import threading
 import platform
 import shutil
 import requests
-import tkinter as tk
-from tkinter import messagebox, ttk
 from google.oauth2 import service_account
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -19,13 +16,17 @@ from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload, HttpRequest
 import json
 import random
+from urllib.parse import urlparse
+
 
 ############## VARIABLES ##############
 
 # Definir ruta base
 base_path = os.path.dirname(os.path.abspath(__file__))
-
 cores = os.cpu_count() # Cantidad de procesadores disponibles
+
+# Endpoint suno api
+base_api_suno_url = 'http://localhost:3000'
 
 # Variables de YouTube
 description = "Escape from reality and immerse yourself in the soothing vibes of this lo-fi song that is guaranteed to make you forget all your problems. Let the calming beats and mellow melodies transport you to a state of tranquility as you listen to this viral lo-fi track. Whether you're studying, working, or simply in need of some relaxation, this song is perfect for you."  # Descripción opcional del video
@@ -613,7 +614,104 @@ def finaly_video_render(video_folder_path, combined_audio_folder, output, resolu
         print(f"Video {output} creado con éxito.")
         print(f"Tiempo de renderizado: {elapsed_time / 60:.2f} minutos")
 
-################## FUNCIONES EXTERNAS ################
+################## FUNCIONES SUNO ################
+def create_audios_from_api(suno_prompt, suno_execution, insrtumental, suno_wait_audio, audio_folder_path, base_api_suno_url):
+
+    for i in range(int(suno_execution)):
+        print(f"Creando audio(x2) {i+1} de {suno_execution}")
+        data = generate_audio_by_prompt({
+            "prompt": suno_prompt,
+            "make_instrumental": insrtumental,
+            "wait_audio": suno_wait_audio
+        }, base_api_suno_url)
+
+        ids = f"{data[0]['id']},{data[1]['id']}"
+        print(f"ids: {ids}")
+
+        # Esperar hasta que los audios estén listos
+        for _ in range(60):
+            data = get_audio_information(ids)
+            if data[0]["status"] == 'streaming' and data[1]["status"] == 'streaming':
+                audio_url_1 = data[0]['audio_url']
+                audio_url_2 = data[1]['audio_url']
+                
+                # Extraer nombres de archivos desde las URLs
+                file_name_1 = f"{data[0]['title']}_1.mp3"
+                file_name_2 = f"{data[1]['title']}_2.mp3"
+                
+                print(f"{data[0]['id']} ==> {audio_url_1}")
+                print(f"{data[1]['id']} ==> {audio_url_2}")
+
+                # Descargar los audios
+                download_audio(audio_url_1, file_name_1, audio_folder_path)
+                download_audio(audio_url_2, file_name_2, audio_folder_path)
+                break
+            else:
+                time.sleep(20)
+
+def custom_generate_audio(payload):
+    url = f"{base_api_suno_url}/api/custom_generate"
+    response = requests.post(url, json=payload, headers={'Content-Type': 'application/json'})
+    return response.json()
+
+def extend_audio(payload):
+    url = f"{base_api_suno_url}/api/extend_audio"
+    response = requests.post(url, json=payload, headers={'Content-Type': 'application/json'})
+    return response.json()
+
+def generate_audio_by_prompt(payload,base_api_suno_url):
+    url = f"{base_api_suno_url}/api/generate"
+    response = requests.post(url, json=payload, headers={'Content-Type': 'application/json'}, timeout=300)
+    if response.status_code == 200:
+            try:
+                data = response.json()
+                return data
+            except requests.exceptions.JSONDecodeError:
+                print("Error: La respuesta no es un JSON válido.")
+                print(f"Respuesta del servidor: {response.text}")
+    else:
+            print(f"Error en la solicitud: {response.status_code}")
+            print(f"Respuesta del servidor: {response.text}")
+
+    return response.json()
+
+def get_audio_information(audio_ids):
+    url = f"{base_api_suno_url}/api/get?ids={audio_ids}"
+    response = requests.get(url)
+    return response.json()
+
+def get_quota_information():
+    url = f"{base_api_suno_url}/api/get_limit"
+    response = requests.get(url)
+    return response.json()
+
+def get_clip(clip_id):
+    url = f"{base_api_suno_url}/api/clip?id={clip_id}"
+    response = requests.get(url)
+    return response.json()
+
+def generate_whole_song(clip_id):
+    payload = {"clip_id": clip_id}
+    url = f"{base_api_suno_url}/api/concat"
+    response = requests.post(url, json=payload)
+    return response.json()
+
+def download_audio(audio_url, file_name, save_path):
+    try:
+        file_path = f"{save_path}/{file_name}"
+        
+        response = requests.get(audio_url)
+        if response.status_code == 200:
+            with open(file_path, 'wb') as f:
+                f.write(response.content)
+            print(f"Audio descargado y guardado como {file_path}")
+        else:
+            print(f"Error al descargar el audio desde {audio_url}: {response.status_code}")
+    except Exception as e:
+        print(f"Se produjo un error al descargar el audio: {e}")
+
+
+################## FUNCIONES Dezgo ################
 
 # funcion para generar imagenes masivas con dezgo mediante su api
 def create_images_ia(api_key, url_api, api_endpoint, api_prompt, api_width, api_height, api_sampler, api_model_id, api_negative_prompt, api_seed, api_format, api_guidance, api_transparent_background, api_execution, image_folder_path, retry_delay=5, max_retries=3):
@@ -981,8 +1079,8 @@ def start_render():
 
     audio_quality = "192k" # '128k','192k','320k'
     fade_duration = 3000 # en milisegundos
-    randomize_audios = False # True o False
-    randomize_name = False # True o False
+    randomize_audios = True # True o False
+    randomize_name = True # True o False
 
     overlay = True # True o False
     overlay_name = "overlay.mp4" # archivo overlay a usar
@@ -991,13 +1089,20 @@ def start_render():
 
     invert_video = True # True o False
 
-    encoder = "libx264" # 'libx264','h264_nvenc','h264_qsv','h264_amf','h264_videotoolbox'
-    quality_level = 2  # 1 es la mejor calidad, 3 es la más baja calidad
+    encoder = "h264_qsv" # 'libx264','h264_nvenc','h264_qsv','h264_amf','h264_videotoolbox'
+    quality_level = 3  # 1 es la mejor calidad, 3 es la más baja calidad
 
     # Api para crear imagenes
-    use_api_DEZGO = False # True o False
-    api_prompt = "Landscape winter realistic 4k high quality" # prompt de la api
-    api_execution = 48 # cantidad de imagenes que se crearan con la api
+    use_api_DEZGO = True # True o False
+    api_prompt = "Landscape realistic 4k high quality" # prompt de la api
+    api_execution = 1 # cantidad de imagenes que se crearan con la api
+
+    # Variables de configuración suno
+    use_suno_api = True
+    suno_prompt = "Lofi ambient chill"
+    insrtumental = True
+    suno_wait_audio = True
+    suno_execution = 5
 
     use_audios_drive = False # True o False
     upload_files_drive = False # True o False
@@ -1046,7 +1151,7 @@ def start_render():
     print('Welcome to render module v1.0.0')
     loading_effect()
     print('\n')
-    config = ask_user_option('¿Quieres configurar el render por este medio o deseas usar las variables globales?', [True, False])
+    config = ask_user_option('¿Quieres configurar el render a continuación?', [True, False])
     render_type = ask_user_option('¿Que tipo de render quieres?', ['render_image', 'render_video', 'render_image_massive', 'render_video_massive', 'subir_a_youtube',])
     print('\n')
     if config:
@@ -1076,6 +1181,11 @@ def start_render():
             if use_api_DEZGO:
                 api_prompt = input('Ingresa el prompt de la API: ')
                 api_execution = int(input('Ingresa la cantidad de imágenes a crear con la API: '))
+
+        use_suno_api = ask_user_option('¿Usar la API Suno para crear audios?', [True, False])
+        if use_suno_api:
+            suno_prompt = input('Ingresa el prompt de la API Suno: ')
+            suno_execution = int(input('Ingresa la cantidad de audios a crear con la API Suno (Genera 2 audios por ejecución): '))
 
         # Variables adicionales
         use_audios_drive = ask_user_option('¿Usar audios de Google Drive?', [True, False])
@@ -1107,6 +1217,10 @@ def start_render():
             print(f'Nombre del overlay: {overlay_name}')
             print(f'Opacidad del overlay: {opacity}')
             print(f'Modo de mezcla: {blend_mode}')
+        print(f'Usando API Suno: {use_suno_api}')
+        if use_suno_api:
+            print(f'Prompt de API Suno: {suno_prompt}')
+            print(f'Cantidad de audios a generar (x2): {suno_execution * 2}')
         print(f'Usando audios de drive: {use_audios_drive}')
         print(f'Subiendo archivos al drive: {upload_files_drive}')
         print(f'Descargar archivos de audio drive: {use_audios_drive}')
@@ -1119,6 +1233,9 @@ def start_render():
     if init.lower() == "si, iniciar":
         loading_effect()
         print('\n')
+
+        if use_suno_api:
+            create_audios_from_api(suno_prompt, suno_execution, insrtumental, suno_wait_audio, audio_folder_path, base_api_suno_url)
 
         if render_type == "subir_a_youtube":
             upload_all_videos_to_youtube(final_video_folder)
