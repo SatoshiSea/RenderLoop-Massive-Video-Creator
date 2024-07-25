@@ -1,4 +1,5 @@
 pydub
+colorama
 requests
 google-auth
 google-auth-oauthlib
