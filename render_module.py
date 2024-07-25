@@ -1269,7 +1269,7 @@ def start_render():
                 clear = ask_user_option("¿Deseas limpiar la carpeta de imagenes en IN?", [True, False])
                 if clear:
                     clear_folder(image_folder_path)
-                    print("Limpieza Completa de carpeta de imagenes al usar la api dezgo"
+                    print("Limpieza Completa de carpeta de imagenes al usar la api dezgo")
         print(f'Usando Nombres ramdoms: {randomize_name}')
         print(f'Usando audios ramdoms: {randomize_audios}')
         if render_type == 'render_video' or render_type == 'render_video_massive':
