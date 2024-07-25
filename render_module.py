@@ -17,7 +17,10 @@ from googleapiclient.http import MediaFileUpload, HttpRequest
 import json
 import random
 from urllib.parse import urlparse
+from colorama import init, Fore, Style
 
+# Inicializa colorama
+init(autoreset=True)
 
 ############## VARIABLES ##############
 
@@ -1061,7 +1064,7 @@ def upload_all_videos_to_youtube(folder_path):
 def loading_effect():
     for _ in range(5):
         for char in '|/-\\':
-            sys.stdout.write(f'\r\033[33mCargando {char} \033[0m')
+            sys.stdout.write(f'\r{Fore.YELLOW}Cargando {char} {Style.RESET_ALL}')
             sys.stdout.flush()
             time.sleep(0.2)
     
@@ -1070,24 +1073,23 @@ def loading_effect():
     sys.stdout.flush()
 
 def ask_user_option(prompt, options): 
-
     converted_options = ['Sí' if opt is True else 'No' if opt is False else opt for opt in options]
 
     while True:
-        print(f"\033[34m## {prompt} ##\033[0m")  
+        print(f"{Fore.BLUE}## {prompt} ##{Style.RESET_ALL}")  
         for i, option in enumerate(converted_options, 1):
-            print(f'\033[32m{i} - {option}\033[0m') 
+            print(f'{Fore.GREEN}{i} - {option}{Style.RESET_ALL}') 
         
         try:
-            choice = int(input('\033[33mSelecciona un número: \033[0m')) 
+            choice = int(input(f'{Fore.YELLOW}Selecciona un número: {Style.RESET_ALL}')) 
             
             if 1 <= choice <= len(converted_options):
                 return options[choice - 1]  # Devolver el valor original, no el convertido
             else:
-                print(f"\033[31mPor favor, elige un número entre 1 y {len(converted_options)}.\033[0m")  
+                print(f"{Fore.RED}Por favor, elige un número entre 1 y {len(converted_options)}.{Style.RESET_ALL}")  
 
         except ValueError:
-            print("\033[31mEntrada no válida. Por favor, ingresa un número.\033[0m") 
+            print(f"{Fore.RED}Entrada no válida. Por favor, ingresa un número.{Style.RESET_ALL}")  
 
 
 def start_render():
