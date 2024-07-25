@@ -1068,18 +1068,36 @@ def upload_all_videos_to_youtube(folder_path):
 
 ##################### EJECUTAMOS EL PROGRAMA ###################
 def loading_effect():
-    for _ in range(5): 
+    for _ in range(5):
         for char in '|/-\\':
-            sys.stdout.write(f'\rCargando {char}')
+            sys.stdout.write(f'\r\033[33mCargando {char} \033[0m')
             sys.stdout.flush()
-            time.sleep(0.2) 
+            time.sleep(0.2)
+    
+    # Limpiar la línea de carga después de terminar
+    sys.stdout.write('\r' + ' ' * 20 + '\r')
+    sys.stdout.flush()
 
-def ask_user_option(prompt, options):
-    print(f"## {prompt} ##")
-    for i, option in enumerate(options, 1):
-        print(f'{i} - {option}')
-    choice = int(input('Selecciona el número correspondiente: '))
-    return options[choice - 1]
+def ask_user_option(prompt, options): 
+
+    converted_options = ['Sí' if opt is True else 'No' if opt is False else opt for opt in options]
+
+    while True:
+        print(f"\033[34m## {prompt} ##\033[0m")  
+        for i, option in enumerate(converted_options, 1):
+            print(f'\033[32m{i} - {option}\033[0m') 
+        
+        try:
+            choice = int(input('\033[33mSelecciona un número: \033[0m')) 
+            
+            if 1 <= choice <= len(converted_options):
+                return options[choice - 1]  # Devolver el valor original, no el convertido
+            else:
+                print(f"\033[31mPor favor, elige un número entre 1 y {len(converted_options)}.\033[0m")  
+
+        except ValueError:
+            print("\033[31mEntrada no válida. Por favor, ingresa un número.\033[0m") 
+
 
 def start_render():
 
@@ -1160,6 +1178,7 @@ def start_render():
     final_video_folder = os.path.join(base_path, "out", "videos")
     overlay_video = os.path.join(base_path, "in", "overlays", overlay_name)
 
+    print('\n')
     print('Welcome to render module v1.0.0')
     loading_effect()
     print('\n')
