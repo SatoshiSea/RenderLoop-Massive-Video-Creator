@@ -1,9 +1,9 @@
-# renderLoop
+# RenderLoop
 Loop de videos al toke
 
 Al ejecutar el comando por primera vez te va a crear las carpetas necesarias para poder crear videos con el script
 
-# mac os:
+# Mac os:
 
 :: Instala Python utilizando Homebrew
 
