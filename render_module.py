@@ -197,10 +197,6 @@ def render_massive_images(audio_folder_path, image_folder_path, combined_audio_f
         print("No se descargaran audios de drive, se usaran los de la carpeta 'audios'")
 
     if use_api_DEZGO:
-        clear = ask_user_option("¿Deseas limpiar la carpeta de imagenes?", [True, False])
-        if clear:
-            clear_folder(image_folder_path)
-            print("Limpieza de carpeta de imagenes al usar api")
         print(f"Creando {api_execution} imagenes con la api, por favor espere...")
         create_images_ia(api_key, url_api, api_endpoint, api_prompt, api_width, api_height, api_sampler, api_model_id, api_negative_prompt, api_seed, api_format, api_guidance, api_transparent_background, api_execution, image_folder_path)
 
@@ -299,11 +295,6 @@ def render_image(audio_folder_path, image_folder_path, combined_audio_folder, fi
     combined_audio.export(combined_audio_path, format="mp3")
 
     if use_api_DEZGO:
-        clear = ask_user_option("¿Deseas limpiar la carpeta de imagenes?", [True, False])
-        if clear:
-            clear_folder(image_folder_path)
-            print("Limpieza de carpeta de imagenes al usar api")
-
         print("Creando imagenes con api")
         create_images_ia(api_key, url_api, api_endpoint, api_prompt, api_width, api_height, api_sampler, api_model_id, api_negative_prompt, api_seed, api_format, api_guidance, api_transparent_background, 1, image_folder_path)
 
@@ -1275,6 +1266,10 @@ def start_render():
             if use_api_DEZGO:
                 print(f'Cantidad de imagenes a generar: {api_execution}')
                 print(f'Prompt de imagenes: {api_prompt}')
+                clear = ask_user_option("¿Deseas limpiar la carpeta de imagenes en IN?", [True, False])
+                if clear:
+                    clear_folder(image_folder_path)
+                    print("Limpieza Completa de carpeta de imagenes al usar la api dezgo"
         print(f'Usando Nombres ramdoms: {randomize_name}')
         print(f'Usando audios ramdoms: {randomize_audios}')
         if render_type == 'render_video' or render_type == 'render_video_massive':
@@ -1299,6 +1294,11 @@ def start_render():
         use_api_DEZGO = True
         api_prompt = input('Ingresa el prompt de la API: ')
         api_execution = int(input('Ingresa la cantidad de imágenes a crear con la API: '))
+        print('\n')
+        clear = ask_user_option("¿Deseas limpiar la carpeta de imagenes en IN?", [True, False])
+        if clear:
+            clear_folder(image_folder_path)
+            print("Limpieza Completa de carpeta de imagenes al usar la api dezgo")
         print('\n')
         print(f'Usando api imagenes: {use_api_DEZGO}')
         print(f'Prompt de imagenes: {api_prompt}')
@@ -1327,7 +1327,7 @@ def start_render():
 
             create_audios_from_api(api_prompt, api_execution, insrtumental, suno_wait_audio, audio_folder_path, base_api_suno_url)
         elif render_type == "generate_images":
-
+    
             create_images_ia(api_key, url_api, api_endpoint, api_prompt, api_width, api_height, api_sampler, api_model_id, api_negative_prompt, api_seed, api_format, api_guidance, api_transparent_background, api_execution, image_folder_path)
         elif render_type == "upload_youtube":
 
