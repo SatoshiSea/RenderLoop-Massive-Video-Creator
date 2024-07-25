@@ -624,27 +624,42 @@ def create_audios_from_api(suno_prompt, suno_execution, insrtumental, suno_wait_
                 file_name_1 = f"{data[0]['title']}_1.mp3"
                 file_name_2 = f"{data[1]['title']}_2.mp3"
                 
+                unique_file_name_1 = ensure_unique_file_name(file_name_1, audio_folder_path)
+                unique_file_name_2 = ensure_unique_file_name(file_name_2, audio_folder_path)
+
                 print(f"{data[0]['id']} ==> {audio_url_1}")
                 print(f"{data[1]['id']} ==> {audio_url_2}")
 
                 # Descargar los audios
-                download_audio(audio_url_1, file_name_1, audio_folder_path)
-                download_audio(audio_url_2, file_name_2, audio_folder_path)
-                
+                download_audio(audio_url_1, unique_file_name_1, audio_folder_path)
+                download_audio(audio_url_2, unique_file_name_2, audio_folder_path)
+
                 # Verificar duración de los audios
-                duration_1 = get_audio_duration(os.path.join(audio_folder_path, file_name_1))
-                duration_2 = get_audio_duration(os.path.join(audio_folder_path, file_name_2))
-                
+                duration_1 = get_audio_duration(os.path.join(audio_folder_path, unique_file_name_1))
+                duration_2 = get_audio_duration(os.path.join(audio_folder_path, unique_file_name_2))
+
                 if duration_1 < 60:
-                    print(f"Duración de {file_name_1} demasiado corta, se eliminara")
-                    os.remove(os.path.join(audio_folder_path, file_name_1))
+                    print(f"Duración de {unique_file_name_1} demasiado corta, se eliminará")
+                    os.remove(os.path.join(audio_folder_path, unique_file_name_1))
                 if duration_2 < 60:
-                    print(f"Duración de {file_name_2} demasiado corta, se eliminara")
-                    os.remove(os.path.join(audio_folder_path, file_name_2))
-            
+                    print(f"Duración de {unique_file_name_2} demasiado corta, se eliminará")
+                    os.remove(os.path.join(audio_folder_path, unique_file_name_2))
+
                 break
             else:
                 time.sleep(8)
+
+def ensure_unique_file_name(file_name, folder_path):
+
+    base_name, extension = os.path.splitext(file_name)
+    counter = 1
+    unique_file_name = file_name
+    
+    while os.path.exists(os.path.join(folder_path, unique_file_name)):
+        unique_file_name = f"{base_name}_{counter}{extension}"
+        counter += 1
+        
+    return unique_file_name
 
 def custom_generate_audio(payload):
     url = f"{base_api_suno_url}/api/custom_generate"
@@ -1099,7 +1114,7 @@ def start_render():
     suno_prompt = "Lofi ambient chill"
     insrtumental = True
     suno_wait_audio = True
-    suno_execution = 200
+    suno_execution = 187
 
     use_audios_drive = False # True o False
     upload_files_drive = False # True o False
