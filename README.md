@@ -1,6 +1,6 @@
 # RenderLoop - Mass Video Generation for Lofi and Beyond
 
-RenderLoop is a tool for generating large quantities of videos, specializing in lofi content. It automates the process of creating videos, making it easy to produce high-quality content at scale.
+RenderLoop is a tool for generating large quantities of videos, specializing in lofi content. It leverages the Suno API for high-quality audio and the Dezgo API for access to a vast library of images. Automating the video creation process, RenderLoop makes it easy to produce high-quality content at scale. With RenderLoop, you can generate customized and engaging videos for your content needs, saving time and effort in the process.
 
 Al ejecutar el comando por primera vez te va a crear las carpetas necesarias para poder crear videos con el script
 
