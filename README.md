@@ -1,5 +1,6 @@
-# RenderLoop
-Loop de videos al toke
+# RenderLoop - Mass Video Generation for Lofi and Beyond
+
+RenderLoop is a tool for generating large quantities of videos, specializing in lofi content. It automates the process of creating videos, making it easy to produce high-quality content at scale.
 
 Al ejecutar el comando por primera vez te va a crear las carpetas necesarias para poder crear videos con el script
 
