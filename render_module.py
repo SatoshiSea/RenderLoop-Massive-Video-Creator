@@ -1117,7 +1117,7 @@ def start_render():
 
     # Api para crear imagenes
     use_api_DEZGO = True # True o False
-    api_prompt = "Landscape realistic 4k high quality" # prompt de la api
+    api_prompt = "Rainy Day in the City Landscape realistic 4k high quality" # prompt de la api
     api_execution = 50 # cantidad de imagenes que se crearan con la api
 
     # Variables de configuración suno
@@ -1125,7 +1125,7 @@ def start_render():
     suno_prompt = "Lofi ambient chill"
     insrtumental = True
     suno_wait_audio = True
-    suno_execution = 187
+    suno_execution = 22
 
     use_audios_drive = False # True o False
     upload_files_drive = False # True o False
@@ -1252,66 +1252,80 @@ def start_render():
         #upload_files_drive = ask_user_option('¿Subir archivos a Google Drive?', [True, False]) 
         #upload_files_youtube = ask_user_option('¿Subir archivos a YouTube?', [True, False]) 
 
-    # preguntamos si queres empezar el proceso y mostramos los datos de las variables globales
-    if render_type != "upload_youtube" or render_type != "generate_images" or render_type != "generate_audios":
+    def imprimir_estado_variable(nombre, valor):
+        # Imprime el estado de una variable booleana en color rojo o verde
+        estado_color = Fore.GREEN if valor else Fore.RED  # Verde si True, Rojo si False
+        print(f'{nombre}: {estado_color}{valor}{Style.RESET_ALL}')
+
+    def mostrar_datos_iniciales():
+        print("\n" + "="*50)
+        print("REVISAR ANTES DE COMENZAR:")
+        print("="*50)
+
+        # Datos generales del render
         print(f'Tipo de render: {render_type}')
-        print(f'Resolution: {resolution}')
+        print(f'Resolución: {resolution}')
         print(f'FPS: {fps}')
         print(f'Video bitrate: {video_bitrate}')
         print(f'Audio quality: {audio_quality}')
-        print(f'Fade duration: {fade_duration}')
+        print(f'Duración del fade: {fade_duration}')
         print(f'Encoder: {encoder}')
-        print(f"Calidad: {quality_level}")
+        print(f'Calidad: {quality_level}')
         print(f'Aspect ratio: {aspect_ratio}')
-        if render_type == 'render_image_massive' or render_type == 'render_image':
-            print(f'Usando api imagenes: {use_api_DEZGO}')
+
+        # Uso de APIs
+        print("\nUSO DE APIs:")
+        if render_type in ['render_image_massive', 'render_image']:
+            imprimir_estado_variable('Usando API imágenes DEZGO', use_api_DEZGO)
             if use_api_DEZGO:
-                print(f'Cantidad de imagenes a generar: {api_execution}')
-                print(f'Prompt de imagenes: {api_prompt}')
-                clear = ask_user_option("¿Deseas limpiar la carpeta de imagenes en IN?", [True, False])
-                if clear:
-                    clear_folder(image_folder_path)
-                    print("Limpieza Completa de carpeta de imagenes al usar la api dezgo")
-        print(f'Usando Nombres ramdoms: {randomize_name}')
-        print(f'Usando audios ramdoms: {randomize_audios}')
-        if render_type == 'render_video' or render_type == 'render_video_massive':
-            print(f'Invert video: {invert_video}')
-        if overlay:
-            print(f'Usando overlay: {overlay}')
-            print(f'Nombre del overlay: {overlay_name}')
-            print(f'Opacidad del overlay: {opacity}')
-            print(f'Modo de mezcla: {blend_mode}')
-        print(f'Usando API Suno: {use_suno_api}')
+                print(f'Cantidad de imágenes a generar: {api_execution}')
+                print(f'Prompt de imágenes: {api_prompt}')
+
+        imprimir_estado_variable('Usando API Suno', use_suno_api)
         if use_suno_api:
             print(f'Prompt de API Suno: {suno_prompt}')
             print(f'Cantidad de audios a generar (x2): {suno_execution * 2}')
-        #print(f'Usando audios de drive: {use_audios_drive}')
-        #print(f'Subiendo archivos al drive: {upload_files_drive}')
-        #print(f'Descargar archivos de audio drive: {use_audios_drive}')
-        #print(f'Subiendo videos finales a Youtube: {upload_files_youtube}')
-    elif render_type == "upload_youtube":
-        print(f'Seleccionaste subir todos los videos finales a Youtube')
+
+        # Otras configuraciones
+        print("\nOTRAS CONFIGURACIONES:")
+        imprimir_estado_variable('Usando nombres aleatorios', randomize_name)
+        imprimir_estado_variable('Usando audios aleatorios', randomize_audios)
+
+        if render_type in ['render_video', 'render_video_massive']:
+            imprimir_estado_variable('Invertir video', invert_video)
+
+        if overlay:
+            imprimir_estado_variable('Usando overlay', overlay)
+            print(f'Nombre del overlay: {overlay_name}')
+            print(f'Opacidad del overlay: {opacity}')
+            print(f'Modo de mezcla: {blend_mode}')
+
+        print("\n" + "="*50)
+        print("REVISAR ANTES DE COMENZAR")
+        print("="*50)
+
+    # Ejecución de la función de revisión de datos iniciales
+    mostrar_datos_iniciales()
+
+    # Lógica del flujo principal
+    if render_type == "upload_youtube":
+        print(f'Seleccionaste subir todos los videos finales a YouTube')
     elif render_type == "generate_images":
-        print(f'Seleccionaste generar imagenes')
+        print(f'Seleccionaste generar imágenes')
         use_api_DEZGO = True
         api_prompt = input('Ingresa el prompt de la API: ')
         api_execution = int(input('Ingresa la cantidad de imágenes a crear con la API: '))
         print('\n')
-        clear = ask_user_option("¿Deseas limpiar la carpeta de imagenes en IN?", [True, False])
-        if clear:
-            clear_folder(image_folder_path)
-            print("Limpieza Completa de carpeta de imagenes al usar la api dezgo")
-        print('\n')
-        print(f'Usando api imagenes: {use_api_DEZGO}')
-        print(f'Prompt de imagenes: {api_prompt}')
-        print(f'Ejecuciones de api imagenes: {api_execution}')
+        imprimir_estado_variable('Usando API imágenes DEZGO', use_api_DEZGO)
+        print(f'Prompt de imágenes: {api_prompt}')
+        print(f'Ejecuciones de API imágenes: {api_execution}')
     elif render_type == "generate_audios":
         print(f'Seleccionaste generar audios')
         use_suno_api = True
         suno_prompt = input('Ingresa el prompt de la API Suno: ')
         suno_execution = int(input('Ingresa la cantidad de audios a crear con la API Suno (Genera 2 audios por ejecución): '))
         print('\n')
-        print(f'Usando API Suno: {use_suno_api}')
+        imprimir_estado_variable('Usando API Suno', use_suno_api)
         print(f'Prompt de API Suno: {suno_prompt}')
         print(f'Ejecuciones de API Suno totales (X2): {suno_execution * 2}')
 
