@@ -594,13 +594,13 @@ def finaly_video_render(video_folder_path, combined_audio_folder, output, resolu
         print(f"Tiempo de renderizado: {elapsed_time / 60:.2f} minutos")
 
 ################## FUNCIONES SUNO ################
-def create_audios_from_api(suno_prompt, suno_execution, insrtumental, suno_wait_audio, audio_folder_path, base_api_suno_url):
+def create_audios_from_api(suno_prompt, suno_execution, instrumental, suno_wait_audio, audio_folder_path, base_api_suno_url):
 
     for i in range(int(suno_execution)):
         print(f"Creando audio(x2) {i+1} de {suno_execution}")
         data = generate_audio_by_prompt({
             "prompt": suno_prompt,
-            "make_instrumental": insrtumental,
+            "make_instrumental": instrumental,
             "wait_audio": suno_wait_audio
         }, base_api_suno_url)
 
@@ -1122,8 +1122,8 @@ def start_render():
 
     # Variables de configuración suno
     use_suno_api = True
-    suno_prompt = "Lofi ambient chill"
-    insrtumental = True
+    suno_prompt = "rave dark underground track breakbeat breakcore. Crazy Amen Breaks and Broken drums."
+    instrumental = True
     suno_wait_audio = True
     suno_execution = 22
 
@@ -1337,11 +1337,11 @@ def start_render():
         print('\n')
 
         if render_type != "generate_audios" and use_suno_api:
-            create_audios_from_api(suno_prompt, suno_execution, insrtumental, suno_wait_audio, audio_folder_path, base_api_suno_url)
+            create_audios_from_api(suno_prompt, suno_execution, instrumental, suno_wait_audio, audio_folder_path, base_api_suno_url)
             
         if render_type == "generate_audios":
 
-            create_audios_from_api(api_prompt, api_execution, insrtumental, suno_wait_audio, audio_folder_path, base_api_suno_url)
+            create_audios_from_api(suno_prompt, suno_execution, instrumental, suno_wait_audio, audio_folder_path, base_api_suno_url)
         elif render_type == "generate_images":
     
             create_images_ia(api_key, url_api, api_endpoint, api_prompt, api_width, api_height, api_sampler, api_model_id, api_negative_prompt, api_seed, api_format, api_guidance, api_transparent_background, api_execution, image_folder_path)
