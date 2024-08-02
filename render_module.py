@@ -32,10 +32,10 @@ cores = os.cpu_count() # Cantidad de procesadores disponibles
 base_api_suno_url = 'http://localhost:3000'
 
 # Variables de YouTube
-description = "Escape from reality and immerse yourself in the soothing vibes of this lo-fi song that is guaranteed to make you forget all your problems. Let the calming beats and mellow melodies transport you to a state of tranquility as you listen to this viral lo-fi track. Whether you're studying, working, or simply in need of some relaxation, this song is perfect for you."  # Descripción opcional del video
-tags = ["Focus and Relax","Lo-Fi Study","Financial Mindfulness","Bitcoin Beats","Chill Study Music","Relaxing Vibes","Study Session","Bitcoin Music","Lo-Fi","Lo-Fi Music","bitcoin","study music","lofi","lofi girl","chill music","focus music","lofi hip hop","lo fi","little soul","lofi music","sleep music","lofi songs","music for studying","chill","lofi chill","lofi study","lofi beats","chill village","chilledcow","lofi deep focus","study lofi","chill study beats","lofi study music","lo fi beats","chill vibes"]  # Etiquetas opcionales del video
-category_id = "10"  # ID de la categoría del video (Ej. 10 para Música)
-privacy_status = "unlisted"  # Estado de privacidad del video (Ej. unlisted para no listado)
+description = ""  # Descripción opcional del video
+tags = []  # Etiquetas opcionales del video
+category_id = ""  # ID de la categoría del video (Ej. 10 para Música)
+privacy_status = ""  # Estado de privacidad del video (Ej. unlisted para no listado)
 
 #datos para ejecutar la api DEZGO
 url_api = "https://api.dezgo.com/"
@@ -667,7 +667,7 @@ def extend_audio(payload):
 
 def generate_audio_by_prompt(payload,base_api_suno_url):
     url = f"{base_api_suno_url}/api/generate"
-    response = requests.post(url, json=payload, headers={'Content-Type': 'application/json'}, timeout=300)
+    response = requests.post(url, json=payload, headers={'Content-Type': 'application/json'})
     if response.status_code == 200:
             try:
                 data = response.json()
@@ -1113,15 +1113,15 @@ def start_render():
     invert_video = True # True o False
 
     encoder = "h264_qsv" # 'libx264','h264_nvenc','h264_qsv','h264_amf','h264_videotoolbox'
-    quality_level = 2  # 1 es la mejor calidad, 3 es la más baja calidad
+    quality_level = 3  # 1 es la mejor calidad, 3 es la más baja calidad
 
     # Api para crear imagenes
-    use_api_DEZGO = True # True o False
-    api_prompt = "Rainy Day in the City Landscape realistic 4k high quality" # prompt de la api
+    use_api_DEZGO = False # True o False
+    api_prompt = "Fantasy Forest Landscape realistic 4k high quality" # prompt de la api
     api_execution = 50 # cantidad de imagenes que se crearan con la api
 
     # Variables de configuración suno
-    use_suno_api = True
+    use_suno_api = False
     suno_prompt = "Lofi ambient chill"
     insrtumental = True
     suno_wait_audio = True
@@ -1183,23 +1183,24 @@ def start_render():
 
     render_type = ask_user_option('¿Que tipo de render quieres?', ['render_image', 'render_video', 'render_image_massive', 'render_video_massive', 'upload_youtube', 'generate_images', 'generate_audios'])
     print('\n')
-    # eliminacion de carpetas
-    delete_folders = ask_user_option('Es necesario eliminar el contenido de las carpetas OUT(aun que esten vacias), continuamos?', [True, False])
+    
+    if render_type != "upload_youtube":
+        delete_folders = ask_user_option('Es necesario eliminar el contenido de las carpetas OUT(aun que esten vacias), continuamos?', [True, False])
 
-    if delete_folders:
-        print('Deleting folders...')
-        clear_folder(final_video_folder)
-        clear_folder(combined_audio_folder)
-        clear_folder(inverted_folder_path)
-    else :
-        print('No se eliminará el contenido de las carpetas OUT')
-        print('Por favor asegurate de que el contenido de las carpetas OUT esté limpio antes de renderizar')
-        print('Proceso cancelado')
-        return
+        if delete_folders:
+            print('Deleting folders...')
+            clear_folder(final_video_folder)
+            clear_folder(combined_audio_folder)
+            clear_folder(inverted_folder_path)
+        else :
+            print('No se eliminará el contenido de las carpetas OUT')
+            print('Por favor asegurate de que el contenido de las carpetas OUT esté limpio antes de renderizar')
+            print('Proceso cancelado')
+            return
 
     print('\n')
 
-    delete_folders = ask_user_option('¿Quieres eliminar el contenido de las carpetas IN (usar en caso de usar las IA)?', [True, False])
+    delete_folders = ask_user_option('¿Quieres eliminar el contenido de las carpetas IN (en caso de seleccionar si te preguntaremos que carpetas eliminar)?', [True, False])
 
     if delete_folders:
         print('Deleting folders...')
@@ -1211,46 +1212,47 @@ def start_render():
             clear_folder(video_folder_path)
     print('\n')
 
-    if render_type != 'upload_youtube' or render_type != 'generate_images' or render_type != 'generate_audios':
+    if render_type not in {'upload_youtube', 'generate_images', 'generate_audios'}:
         config = ask_user_option('¿Quieres configurar el render a continuación?', [True, False])
 
-    if config:
-        # Preguntas para las variables generales
-        fps = int(ask_user_option('Selecciona los FPS:', [20, 25, 30, 60]))
-        resolution = ask_user_option('Selecciona la resolución:', ['1920x1080', '1280x720', '854x480', '640x360'])
-        aspect_ratio = ask_user_option('Selecciona la relación de aspecto:', ['16:9', '4:3', '1:1'])
-        video_bitrate = ask_user_option('Selecciona el bitrate del video:', ['1000k', '2000k', '3000k', '4000k'])
-        encoder = ask_user_option('Selecciona el codificador de video:', ['libx264', 'h264_nvenc', 'h264_qsv', 'h264_amf', 'h264_videotoolbox'])
-        quality_level = int(ask_user_option('Selecciona el nivel de calidad 3 (alta), 2 (media) o 1 (baja):', [1, 2, 3]))
-        audio_quality = ask_user_option('Selecciona la calidad del audio:', ['128k', '192k', '320k'])
-        fade_duration = int(input('Ingresa la duración del fade en milisegundos  (ej. 3000):'))
-        randomize_audios = ask_user_option('¿Quieres randomizar los audios?', [True, False]) 
-        randomize_name = ask_user_option('¿Quieres randomizar los nombres?', [True, False]) 
-        
-        overlay = ask_user_option('¿Quieres usar un overlay?', [True, False])
-        if overlay:
-            overlay_name = ask_user_option('Ingresa el nombre del overlay:', ['snow.mp4', 'particles.mp4', 'vhs.mp4', 'vhs-lines.mp4', 'dust.mp4', 'dust-final.mp4'])
-            opacity = float(input('Ingresa la opacidad del overlay (0 a 1): '))
-            blend_mode = ask_user_option('Selecciona el modo de mezcla:', ['addition', 'multiply', 'screen', 'overlay', 'darken', 'lighten', 'hard-light', 'soft-light'])
 
-        if render_type == 'render_video' or render_type == 'render_video_massive':
-            invert_video = ask_user_option('¿Quieres invertir el video?', [True, False])
+        if config:
+            # Preguntas para las variables generales
+            fps = int(ask_user_option('Selecciona los FPS:', [20, 25, 30, 60]))
+            resolution = ask_user_option('Selecciona la resolución:', ['1920x1080', '1280x720', '854x480', '640x360'])
+            aspect_ratio = ask_user_option('Selecciona la relación de aspecto:', ['16:9', '4:3', '1:1'])
+            video_bitrate = ask_user_option('Selecciona el bitrate del video:', ['1000k', '2000k', '3000k', '4000k'])
+            encoder = ask_user_option('Selecciona el codificador de video:', ['libx264', 'h264_nvenc', 'h264_qsv', 'h264_amf', 'h264_videotoolbox'])
+            quality_level = int(ask_user_option('Selecciona el nivel de calidad 3 (alta), 2 (media) o 1 (baja):', [1, 2, 3]))
+            audio_quality = ask_user_option('Selecciona la calidad del audio:', ['128k', '192k', '320k'])
+            fade_duration = int(input('Ingresa la duración del fade en milisegundos  (ej. 3000):'))
+            randomize_audios = ask_user_option('¿Quieres randomizar los audios?', [True, False]) 
+            randomize_name = ask_user_option('¿Quieres randomizar los nombres?', [True, False]) 
+            
+            overlay = ask_user_option('¿Quieres usar un overlay?', [True, False])
+            if overlay:
+                overlay_name = ask_user_option('Ingresa el nombre del overlay:', ['snow.mp4', 'particles.mp4', 'vhs.mp4', 'vhs-lines.mp4', 'dust.mp4', 'dust-final.mp4'])
+                opacity = float(input('Ingresa la opacidad del overlay (0 a 1): '))
+                blend_mode = ask_user_option('Selecciona el modo de mezcla:', ['addition', 'multiply', 'screen', 'overlay', 'darken', 'lighten', 'hard-light', 'soft-light'])
 
-        if render_type == 'render_image_massive' or render_type == 'render_image':
-            use_api_DEZGO = ask_user_option('¿Usar la API DEZGO para crear imágenes?', [True, False])
-            if use_api_DEZGO:
-                api_prompt = input('Ingresa el prompt de la API: ')
-                api_execution = int(input('Ingresa la cantidad de imágenes a crear con la API: '))
+            if render_type == 'render_video' or render_type == 'render_video_massive':
+                invert_video = ask_user_option('¿Quieres invertir el video?', [True, False])
 
-        use_suno_api = ask_user_option('¿Usar la API Suno para crear audios?', [True, False])
-        if use_suno_api:
-            suno_prompt = input('Ingresa el prompt de la API Suno: ')
-            suno_execution = int(input('Ingresa la cantidad de audios a crear con la API Suno (Genera 2 audios por ejecución): '))
+            if render_type == 'render_image_massive' or render_type == 'render_image':
+                use_api_DEZGO = ask_user_option('¿Usar la API DEZGO para crear imágenes?', [True, False])
+                if use_api_DEZGO:
+                    api_prompt = input('Ingresa el prompt de la API: ')
+                    api_execution = int(input('Ingresa la cantidad de imágenes a crear con la API: '))
 
-        # Variables adicionales
-        #use_audios_drive = ask_user_option('¿Usar audios de Google Drive?', [True, False])
-        #upload_files_drive = ask_user_option('¿Subir archivos a Google Drive?', [True, False]) 
-        #upload_files_youtube = ask_user_option('¿Subir archivos a YouTube?', [True, False]) 
+            use_suno_api = ask_user_option('¿Usar la API Suno para crear audios?', [True, False])
+            if use_suno_api:
+                suno_prompt = input('Ingresa el prompt de la API Suno: ')
+                suno_execution = int(input('Ingresa la cantidad de audios a crear con la API Suno (Genera 2 audios por ejecución): '))
+
+            # Variables adicionales
+            #use_audios_drive = ask_user_option('¿Usar audios de Google Drive?', [True, False])
+            #upload_files_drive = ask_user_option('¿Subir archivos a Google Drive?', [True, False]) 
+            #upload_files_youtube = ask_user_option('¿Subir archivos a YouTube?', [True, False]) 
 
     def imprimir_estado_variable(nombre, valor):
         # Imprime el estado de una variable booleana en color rojo o verde
@@ -1304,9 +1306,6 @@ def start_render():
         print("REVISAR ANTES DE COMENZAR")
         print("="*50)
 
-    # Ejecución de la función de revisión de datos iniciales
-    mostrar_datos_iniciales()
-
     # Lógica del flujo principal
     if render_type == "upload_youtube":
         print(f'Seleccionaste subir todos los videos finales a YouTube')
@@ -1329,6 +1328,9 @@ def start_render():
         print(f'Prompt de API Suno: {suno_prompt}')
         print(f'Ejecuciones de API Suno totales (X2): {suno_execution * 2}')
 
+    print('\n')
+    if render_type != "generate_audios" or not "upload_youtube" or not "generate_images":
+            mostrar_datos_iniciales()
 
     init = ask_user_option('¿Quieres iniciar el render?', ['si, iniciar', 'no, detener'])
 
@@ -1336,12 +1338,12 @@ def start_render():
         loading_effect()
         print('\n')
 
-        if render_type != "generate_audios" and use_suno_api:
+        if render_type != "generate_audios" or not "upload_youtube" and use_suno_api:
             create_audios_from_api(suno_prompt, suno_execution, insrtumental, suno_wait_audio, audio_folder_path, base_api_suno_url)
             
         if render_type == "generate_audios":
 
-            create_audios_from_api(api_prompt, api_execution, insrtumental, suno_wait_audio, audio_folder_path, base_api_suno_url)
+            create_audios_from_api(suno_prompt, suno_execution, insrtumental, suno_wait_audio, audio_folder_path, base_api_suno_url)
         elif render_type == "generate_images":
     
             create_images_ia(api_key, url_api, api_endpoint, api_prompt, api_width, api_height, api_sampler, api_model_id, api_negative_prompt, api_seed, api_format, api_guidance, api_transparent_background, api_execution, image_folder_path)

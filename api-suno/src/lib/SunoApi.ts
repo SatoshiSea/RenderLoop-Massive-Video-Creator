@@ -54,6 +54,25 @@ class SunoApi {
     });
   }
 
+    // Helper method for retry logic
+    private async fetchWithRetry(url: string, method: string, data?: any, retries = 3, timeout = 60000): Promise<any> {
+      for (let i = 0; i < retries; i++) {
+        try {
+          const response = await this.client.request({
+            url,
+            method,
+            data,
+            timeout
+          });
+          return response.data;
+        } catch (error) {
+          if (i === retries - 1) throw error; // Throw error if final attempt fails
+          logger.warn(`Retrying request to ${url} (Attempt ${i + 2} of ${retries})...`);
+          await sleep(1); // Wait before retrying (you can adjust the wait time)
+        }
+      }
+    }
+
   public async init(): Promise<SunoApi> {
     await this.getAuthToken();
     await this.keepAlive();
@@ -129,17 +148,10 @@ class SunoApi {
     await this.keepAlive(false);
     const payload: any = { clip_id: clip_id };
 
-    const response = await this.client.post(
-      `${SunoApi.BASE_URL}/api/generate/concat/v2/`,
-      payload,
-      {
-        timeout: 10000, // 10 seconds timeout
-      },
-    );
-    if (response.status !== 200) {
-      throw new Error("Error response:" + response.statusText);
-    }
-    return response.data;
+    const url = `${SunoApi.BASE_URL}/api/generate/concat/v2/`;
+    const response = await this.fetchWithRetry(url, 'post', payload, 3, 120000); // 120 seconds timeout with retries
+    
+    return response;
   }
 
   /**
@@ -210,13 +222,10 @@ class SunoApi {
       wait_audio: wait_audio,
       payload: payload,
     }, null, 2));
-    const response = await this.client.post(
-      `${SunoApi.BASE_URL}/api/generate/v2/`,
-      payload,
-      {
-        timeout: 10000, // 10 seconds timeout
-      },
-    );
+
+    const url = `${SunoApi.BASE_URL}/api/generate/v2/`;
+    const response = await this.fetchWithRetry(url, 'post', payload, 3, 120000); // 120 seconds timeout with retries
+    
     logger.info("generateSongs Response:\n" + JSON.stringify(response.data, null, 2));
     if (response.status !== 200) {
       throw new Error("Error response:" + response.statusText);
@@ -347,10 +356,8 @@ class SunoApi {
       url = `${url}?ids=${songIds.join(',')}`;
     }
     logger.info("Get audio status: " + url);
-    const response = await this.client.get(url, {
-      // 3 seconds timeout
-      timeout: 3000
-    });
+    
+    const response = await this.fetchWithRetry(url, 'get', undefined, 3, 120000); // 120 seconds timeout with retries
 
     const audios = response.data;
     return audios.map((audio: any) => ({
