@@ -594,13 +594,13 @@ def finaly_video_render(video_folder_path, combined_audio_folder, output, resolu
         print(f"Tiempo de renderizado: {elapsed_time / 60:.2f} minutos")
 
 ################## FUNCIONES SUNO ################
-def create_audios_from_api(suno_prompt, suno_execution, insrtumental, suno_wait_audio, audio_folder_path, base_api_suno_url):
+def create_audios_from_api(suno_prompt, suno_execution, instrumental, suno_wait_audio, audio_folder_path, base_api_suno_url):
 
     for i in range(int(suno_execution)):
         print(f"Creando audio(x2) {i+1} de {suno_execution}")
         data = generate_audio_by_prompt({
             "prompt": suno_prompt,
-            "make_instrumental": insrtumental,
+            "make_instrumental": instrumental,
             "wait_audio": suno_wait_audio
         }, base_api_suno_url)
 
