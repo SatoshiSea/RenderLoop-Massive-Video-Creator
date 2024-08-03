@@ -54,25 +54,6 @@ class SunoApi {
     });
   }
 
-    // Helper method for retry logic
-    private async fetchWithRetry(url: string, method: string, data?: any, retries = 3, timeout = 60000): Promise<any> {
-      for (let i = 0; i < retries; i++) {
-        try {
-          const response = await this.client.request({
-            url,
-            method,
-            data,
-            timeout
-          });
-          return response.data;
-        } catch (error) {
-          if (i === retries - 1) throw error; // Throw error if final attempt fails
-          logger.warn(`Retrying request to ${url} (Attempt ${i + 2} of ${retries})...`);
-          await sleep(1); // Wait before retrying (you can adjust the wait time)
-        }
-      }
-    }
-
   public async init(): Promise<SunoApi> {
     await this.getAuthToken();
     await this.keepAlive();
@@ -148,10 +129,17 @@ class SunoApi {
     await this.keepAlive(false);
     const payload: any = { clip_id: clip_id };
 
-    const url = `${SunoApi.BASE_URL}/api/generate/concat/v2/`;
-    const response = await this.fetchWithRetry(url, 'post', payload, 3, 120000); // 120 seconds timeout with retries
-    
-    return response;
+    const response = await this.client.post(
+      `${SunoApi.BASE_URL}/api/generate/concat/v2/`,
+      payload,
+      {
+        timeout: 10000, // 10 seconds timeout
+      },
+    );
+    if (response.status !== 200) {
+      throw new Error("Error response:" + response.statusText);
+    }
+    return response.data;
   }
 
   /**
@@ -222,10 +210,13 @@ class SunoApi {
       wait_audio: wait_audio,
       payload: payload,
     }, null, 2));
-
-    const url = `${SunoApi.BASE_URL}/api/generate/v2/`;
-    const response = await this.fetchWithRetry(url, 'post', payload, 3, 120000); // 120 seconds timeout with retries
-    
+    const response = await this.client.post(
+      `${SunoApi.BASE_URL}/api/generate/v2/`,
+      payload,
+      {
+        timeout: 10000, // 10 seconds timeout
+      },
+    );
     logger.info("generateSongs Response:\n" + JSON.stringify(response.data, null, 2));
     if (response.status !== 200) {
       throw new Error("Error response:" + response.statusText);
@@ -349,6 +340,24 @@ class SunoApi {
    * @param songIds An optional array of song IDs to retrieve information for.
    * @returns A promise that resolves to an array of AudioInfo objects.
    */
+  
+  // Definición de la función asincrónica fetchWithRetries
+  public async fetchWithRetries(url: string, maxRetries: number, timeout: number): Promise<any> {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) { // Usa maxRetries
+      try {
+        // Asegúrate de que 'this.client' está correctamente enlazada
+        const response = await this.client.get(url, { timeout });
+        return response; // Si la solicitud tiene éxito, retornamos la respuesta
+      } catch (error) {
+        if (attempt === maxRetries) { // Usa maxRetries
+          logger.error("Error al obtener el estado del audio después de varios intentos:", error);
+          throw error; // Si todos los intentos fallan, lanzamos el error
+        }
+        logger.warn(`Intento ${attempt} fallido. Reintentando...`);
+      }
+    }
+  }
+  
   public async get(songIds?: string[]): Promise<AudioInfo[]> {
     await this.keepAlive(false);
     let url = `${SunoApi.BASE_URL}/api/feed/`;
@@ -356,29 +365,36 @@ class SunoApi {
       url = `${url}?ids=${songIds.join(',')}`;
     }
     logger.info("Get audio status: " + url);
-    
-    const response = await this.fetchWithRetry(url, 'get', undefined, 3, 120000); // 120 seconds timeout with retries
-
-    const audios = response.data;
-    return audios.map((audio: any) => ({
-      id: audio.id,
-      title: audio.title,
-      image_url: audio.image_url,
-      lyric: audio.metadata.prompt ? this.parseLyrics(audio.metadata.prompt) : "",
-      audio_url: audio.audio_url,
-      video_url: audio.video_url,
-      created_at: audio.created_at,
-      model_name: audio.model_name,
-      status: audio.status,
-      gpt_description_prompt: audio.metadata.gpt_description_prompt,
-      prompt: audio.metadata.prompt,
-      type: audio.metadata.type,
-      tags: audio.metadata.tags,
-      duration: audio.metadata.duration,  
-      error_message: audio.metadata.error_message,
-    }));
+  
+    try {
+      const maxRetries = 3; // Número de reintentos
+      const timeout = 120000; // Tiempo de espera en milisegundos
+      const response = await this.fetchWithRetries(url, maxRetries, timeout); // Asegúrate de usar 'this'
+      const audios = response.data; // Mueve la asignación dentro del bloque try
+      return audios.map((audio: any) => ({
+        id: audio.id,
+        title: audio.title,
+        image_url: audio.image_url,
+        lyric: audio.metadata.prompt ? this.parseLyrics(audio.metadata.prompt) : "",
+        audio_url: audio.audio_url,
+        video_url: audio.video_url,
+        created_at: audio.created_at,
+        model_name: audio.model_name,
+        status: audio.status,
+        gpt_description_prompt: audio.metadata.gpt_description_prompt,
+        prompt: audio.metadata.prompt,
+        type: audio.metadata.type,
+        tags: audio.metadata.tags,
+        duration: audio.metadata.duration,  
+        error_message: audio.metadata.error_message,
+      }));
+    } catch (error) {
+      // Maneja el error aquí
+      logger.error("No se pudo obtener el estado del audio:", error);
+      throw error; // O manejar de otra forma según el caso
+    }
   }
-
+  
   /**
    * Retrieves information for a specific audio clip.
    * @param clipId The ID of the audio clip to retrieve information for.
