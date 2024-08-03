@@ -597,7 +597,8 @@ def finaly_video_render(video_folder_path, combined_audio_folder, output, resolu
 def create_audios_from_api(suno_prompt, suno_execution, instrumental, suno_wait_audio, audio_folder_path, base_api_suno_url):
 
     for i in range(int(suno_execution)):
-        print(f"Creando audio(x2) {i+1} de {suno_execution}")
+        print(f"{Fore.CYAN}Creando audio (x2) {i+1} de {suno_execution}{Style.RESET_ALL}")
+        
         data = generate_audio_by_prompt({
             "prompt": suno_prompt,
             "make_instrumental": instrumental,
@@ -605,7 +606,7 @@ def create_audios_from_api(suno_prompt, suno_execution, instrumental, suno_wait_
         }, base_api_suno_url)
 
         ids = f"{data[0]['id']},{data[1]['id']}"
-        print(f"ids: {ids}")
+        print(f"{Fore.YELLOW}IDs generados: {ids}{Style.RESET_ALL}")
 
         # Esperar hasta que los audios estén listos
         for _ in range(60):
@@ -621,8 +622,8 @@ def create_audios_from_api(suno_prompt, suno_execution, instrumental, suno_wait_
                 unique_file_name_1 = ensure_unique_file_name(file_name_1, audio_folder_path)
                 unique_file_name_2 = ensure_unique_file_name(file_name_2, audio_folder_path)
 
-                print(f"{data[0]['id']} ==> {audio_url_1}")
-                print(f"{data[1]['id']} ==> {audio_url_2}")
+                print(f"{Fore.GREEN}{data[0]['id']} ==> {audio_url_1}{Style.RESET_ALL}")
+                print(f"{Fore.GREEN}{data[1]['id']} ==> {audio_url_2}{Style.RESET_ALL}")
 
                 # Descargar los audios
                 download_audio(audio_url_1, unique_file_name_1, audio_folder_path)
@@ -633,15 +634,16 @@ def create_audios_from_api(suno_prompt, suno_execution, instrumental, suno_wait_
                 duration_2 = get_audio_duration(os.path.join(audio_folder_path, unique_file_name_2))
 
                 if duration_1 < 60:
-                    print(f"Duración de {unique_file_name_1} demasiado corta, se eliminará")
+                    print(f"{Fore.RED}Duración de {unique_file_name_1} demasiado corta, se eliminará{Style.RESET_ALL}")
                     os.remove(os.path.join(audio_folder_path, unique_file_name_1))
                 if duration_2 < 60:
-                    print(f"Duración de {unique_file_name_2} demasiado corta, se eliminará")
+                    print(f"{Fore.RED}Duración de {unique_file_name_2} demasiado corta, se eliminará{Style.RESET_ALL}")
                     os.remove(os.path.join(audio_folder_path, unique_file_name_2))
 
                 break
             else:
-                time.sleep(8)
+                print(f"{Fore.MAGENTA}Esperando que los audios estén completos...{Style.RESET_ALL}")
+                time.sleep(20)
 
 def ensure_unique_file_name(file_name, folder_path):
 
@@ -710,7 +712,7 @@ def download_audio(audio_url, file_name, save_path):
         if response.status_code == 200:
             with open(file_path, 'wb') as f:
                 f.write(response.content)
-            print(f"Audio descargado y guardado como {file_path}")
+            print(f"Audio descargado y guardado como {file_name}")
         else:
             print(f"Error al descargar el audio desde {audio_url}: {response.status_code}")
     except Exception as e:
@@ -1314,20 +1316,30 @@ def start_render():
         use_api_DEZGO = True
         api_prompt = input('Ingresa el prompt de la API: ')
         api_execution = int(input('Ingresa la cantidad de imágenes a crear con la API: '))
-        print('\n')
+        print("\n" + "="*50)
+        print("REVISAR ANTES DE COMENZAR")
+        print("="*50)
         imprimir_estado_variable('Usando API imágenes DEZGO', use_api_DEZGO)
         print(f'Prompt de imágenes: {api_prompt}')
         print(f'Ejecuciones de API imágenes: {api_execution}')
+        print("\n" + "="*50)
+        print("REVISAR ANTES DE COMENZAR")
+        print("="*50)
     elif render_type == "generate_audios":
         print(f'Seleccionaste generar audios')
         use_suno_api = True
         suno_prompt = input('Ingresa el prompt de la API Suno: ')
         suno_execution = int(input('Ingresa la cantidad de audios a crear con la API Suno (Genera 2 audios por ejecución): '))
-        print('\n')
+        print("\n" + "="*50)
+        print("REVISAR ANTES DE COMENZAR")
+        print("="*50)
         imprimir_estado_variable('Usando API Suno', use_suno_api)
         print(f'Prompt de API Suno: {suno_prompt}')
         print(f'Ejecuciones de API Suno totales (X2): {suno_execution * 2}')
-
+        print("\n" + "="*50)
+        print("REVISAR ANTES DE COMENZAR")
+        print("="*50)
+        
     print('\n')
     if render_type != "generate_audios" or not "upload_youtube" or not "generate_images":
             mostrar_datos_iniciales()
