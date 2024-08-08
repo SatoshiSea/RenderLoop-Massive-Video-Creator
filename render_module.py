@@ -1350,9 +1350,6 @@ def start_render():
         loading_effect()
         print('\n')
 
-        if render_type != "generate_audios" or not "upload_youtube" and use_suno_api:
-            create_audios_from_api(suno_prompt, suno_execution, insrtumental, suno_wait_audio, audio_folder_path, base_api_suno_url)
-            
         if render_type == "generate_audios":
 
             create_audios_from_api(suno_prompt, suno_execution, insrtumental, suno_wait_audio, audio_folder_path, base_api_suno_url)
@@ -1363,16 +1360,20 @@ def start_render():
 
             upload_all_videos_to_youtube(final_video_folder)
         elif render_type == "render_video":
-
+            if use_suno_api:
+                create_audios_from_api(suno_prompt, suno_execution, insrtumental, suno_wait_audio, audio_folder_path, base_api_suno_url)            
             render_video(video_folder_path, audio_folder_path, combined_audio_folder, inverted_folder_path, final_video_folder, fade_duration, resolution, fps, video_bitrate, audio_quality, overlay_video, invert_video, encoder, quality_level, aspect_ratio, use_audios_drive, upload_files_drive, upload_files_youtube, randomize_audios, randomize_name, overlay, opacity, blend_mode, preset, pix_fmt, cores)
         elif render_type == "render_image":
-
+            if use_suno_api:
+                create_audios_from_api(suno_prompt, suno_execution, insrtumental, suno_wait_audio, audio_folder_path, base_api_suno_url)
             render_image(audio_folder_path, image_folder_path, combined_audio_folder, final_video_folder, fade_duration, resolution, fps, video_bitrate, audio_quality, overlay_video, use_api_DEZGO, api_prompt, api_execution, encoder, quality_level, aspect_ratio, use_audios_drive, upload_files_drive, upload_files_youtube, randomize_audios, randomize_name, overlay, opacity, blend_mode, preset, pix_fmt, cores)
         elif render_type == "render_image_massive":
-
+            if use_suno_api:
+                create_audios_from_api(suno_prompt, suno_execution, insrtumental, suno_wait_audio, audio_folder_path, base_api_suno_url)
             render_massive_images(audio_folder_path, image_folder_path, combined_audio_folder, final_video_folder, fade_duration, resolution, fps, video_bitrate, audio_quality, overlay_video, use_api_DEZGO, api_prompt, api_execution, encoder, quality_level, aspect_ratio, use_audios_drive, upload_files_drive, upload_files_youtube, randomize_audios, randomize_name, overlay, opacity, blend_mode, preset, pix_fmt, cores)
         elif render_type == "render_video_massive":
-
+            if use_suno_api:
+                create_audios_from_api(suno_prompt, suno_execution, insrtumental, suno_wait_audio, audio_folder_path, base_api_suno_url)
             render_massive_videos(audio_folder_path, video_folder_path, combined_audio_folder, inverted_folder_path, final_video_folder, fade_duration, resolution, fps, video_bitrate, audio_quality, overlay_video, invert_video, encoder, quality_level, aspect_ratio, use_audios_drive, upload_files_drive, upload_files_youtube, randomize_audios, randomize_name, overlay, opacity, blend_mode, preset, pix_fmt, cores)
 
     else:
