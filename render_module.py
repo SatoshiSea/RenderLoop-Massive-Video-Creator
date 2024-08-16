@@ -1119,8 +1119,8 @@ def start_render():
 
     # Api para crear imagenes
     use_api_DEZGO = False # True o False
-    api_prompt = "Fantasy Forest Landscape realistic 4k high quality" # prompt de la api
-    api_execution = 50 # cantidad de imagenes que se crearan con la api
+    api_prompt = "manantial Landscape realistic 4k high quality" # prompt de la api
+    api_execution = 22 # cantidad de imagenes que se crearan con la api
 
     # Variables de configuración suno
     use_suno_api = False
