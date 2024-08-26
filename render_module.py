@@ -203,7 +203,7 @@ def render_massive_images(audio_folder_path, image_folder_path, combined_audio_f
         print(f"Creando {api_execution} imagenes con la api, por favor espere...")
         create_images_ia(api_key, url_api, api_endpoint, api_prompt, api_width, api_height, api_sampler, api_model_id, api_negative_prompt, api_seed, api_format, api_guidance, api_transparent_background, api_execution, image_folder_path)
 
-    image_files = [f for f in os.listdir(image_folder_path) if f.endswith(('.png', '.jpg', '.jpeg', '.gif'))]
+    image_files = [f for f in os.listdir(image_folder_path) if f.endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp'))]
     audio_files = [f for f in os.listdir(audio_folder_path) if f.endswith(('.mp3', '.wav', '.aac'))]
 
     if randomize_audios:
@@ -1108,7 +1108,7 @@ def start_render():
     randomize_name = True # True o False
 
     overlay = True # True o False
-    overlay_name = "vhs-lines.mp4" # 'particles.mp4', 'vhs.mp4', 'vhs-lines.mp4', 'dust.mp4', 'dust-final.mp4'
+    overlay_name = "dust_final.mp4" # 'particles.mp4', 'vhs.mp4', 'vhs-lines.mp4', 'dust.mp4', 'dust_final.mp4'
     opacity = 1 # entre 0 y 1
     blend_mode = "addition" # 'addition','multiply','screen','overlay','darken','lighten','color-dodge','color-burn','hard-light','soft-light','difference','exclusion','hue','saturation','color','luminosity'
 
