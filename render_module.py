@@ -18,6 +18,7 @@ import json
 import random
 from urllib.parse import urlparse
 from colorama import init, Fore, Style
+import re
 
 # Inicializa colorama
 init(autoreset=True)
