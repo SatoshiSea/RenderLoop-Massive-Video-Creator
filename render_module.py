@@ -629,9 +629,9 @@ def create_audios_from_api(suno_prompt, suno_execution, instrumental, suno_wait_
                     audio_url_1 = data[0]['audio_url']
                     audio_url_2 = data[1]['audio_url']
                     
-                    # Extract file names from URLs
-                    file_name_1 = f"{data[0]['title']}_1.mp3"
-                    file_name_2 = f"{data[1]['title']}_2.mp3"
+                    # Extract file names from URLs and limit them to 20 characters
+                    file_name_1 = f"{data[0]['title'][:20]}_1.mp3"
+                    file_name_2 = f"{data[1]['title'][:20]}_2.mp3"
                     
                     unique_file_name_1 = ensure_unique_file_name(file_name_1, audio_folder_path)
                     unique_file_name_2 = ensure_unique_file_name(file_name_2, audio_folder_path)
@@ -755,6 +755,9 @@ def create_images_ia(api_key, url_api, api_endpoint, api_prompt, api_width, api_
 
         # Clean the prompt to use it as part of the file name
         clean_prompt = re.sub(r'[^\w\s-]', '', prompt).strip().replace(' ', '_')  # Removes invalid characters and replaces spaces with underscores
+        
+        # Limit the length of the filename to 20 characters
+        clean_prompt = clean_prompt[:20]
 
         for i in range(num_images):
             success = False
