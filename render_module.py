@@ -39,7 +39,7 @@ privacy_status = ""  # Estado de privacidad del video (Ej. unlisted para no list
 
 #datos para ejecutar la api DEZGO
 url_api = "https://api.dezgo.com/"
-api_key = "DEZGO-820FA4D500D9754DDE2A6E6B9E3DD5BBF28160EA20654895CE9A0F89E30406F7E1AA4C62"
+api_key = "DEZGO-EF5AF98400D97B80A918240CBF4A5DFC08444CE2B66F58414F509A6D429293351D57FD46"
 api_endpoint ="text2image_flux"
 api_width = 1385
 api_height = 735
@@ -94,9 +94,10 @@ def create_folders(base_path):
     for folder in folders_to_check:
         if not os.path.exists(folder):
             os.makedirs(folder)
-            print(f"Carpeta creada: {folder}")
+            print(f"Folder created: {folder}")
         else:
-            print(f"Carpeta ya existe: {folder}")
+            print(f"Folder already exists: {folder}")
+
 
 def clear_folder(folder_path):
     for filename in os.listdir(folder_path):
@@ -193,14 +194,14 @@ def get_audio_duration(file_path):
 def render_massive_images(audio_folder_path, image_folder_path, combined_audio_folder, final_video_folder, fade_duration, resolution, fps, video_bitrate, audio_quality, overlay_video, use_api_DEZGO, api_prompt, api_execution, encoder, quality_level, aspect_ratio, use_audios_drive, upload_files_drive, upload_files_youtube, randomize_audios, randomize_name, overlay, opacity, blend_mode, preset, pix_fmt, cores):
 
     if use_audios_drive:
-        print("Descargando audios de drive")
-        service =authenticate()
+        print("Downloading audios from drive")
+        service = authenticate()
         list_and_download_audio_files(service)
     else:
-        print("No se descargaran audios de drive, se usaran los de la carpeta 'audios'")
+        print("Audios will not be downloaded from drive, those from the 'audios' folder will be used")
 
     if use_api_DEZGO:
-        print(f"Creando {api_execution} imagenes con la api, por favor espere...")
+        print(f"Creating {api_execution} images with the API, please wait...")
         create_images_ia(api_key, url_api, api_endpoint, api_prompt, api_width, api_height, api_sampler, api_model_id, api_negative_prompt, api_seed, api_format, api_guidance, api_transparent_background, api_execution, image_folder_path)
 
     image_files = [f for f in os.listdir(image_folder_path) if f.endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp'))]
@@ -213,7 +214,7 @@ def render_massive_images(audio_folder_path, image_folder_path, combined_audio_f
     num_audios = len(audio_files)
 
     if num_images == 0 or num_audios == 0:
-        print("No hay suficientes imágenes o audios para crear videos.")
+        print("Not enough images or audios to create videos.")
         return
 
     audios_per_image = num_audios // num_images
@@ -222,7 +223,7 @@ def render_massive_images(audio_folder_path, image_folder_path, combined_audio_f
     audio_index = 0
 
     for i, image_file in enumerate(image_files):
-        print(f"Procesando imagen {i + 1}/{num_images}: {image_file}")
+        print(f"Processing image {i + 1}/{num_images}: {image_file}")
 
         audio_segments = []
 
@@ -252,26 +253,26 @@ def render_massive_images(audio_folder_path, image_folder_path, combined_audio_f
         else:
             output = os.path.join(final_video_folder, os.path.splitext(image_file)[0] + '.mp4')
 
-        print(f"Creando video {i + 1}/{num_images} con la imagen {image_file} y audio combinado.")
+        print(f"Creating video {i + 1}/{num_images} with image {image_file} and combined audio.")
 
         finaly_image_render(image_path, combined_audio_path, output, resolution, fps, video_bitrate, audio_quality, overlay_video, overlay, opacity, blend_mode, preset, pix_fmt, encoder, quality_level, aspect_ratio, cores, upload_files_youtube)
 
     if upload_files_drive:
-         print(f"Subiendo archivos al drive en carpeta {FOLDER_UPLOAD_NAME}")
-         service = authenticate()
-         folder_id_upload = get_or_create_folder(service, FOLDER_UPLOAD_NAME)
-         upload_files(service, folder_id_upload, FOLDER_UPLOAD_PATH)
+        print(f"Uploading files to drive in folder {FOLDER_UPLOAD_NAME}")
+        service = authenticate()
+        folder_id_upload = get_or_create_folder(service, FOLDER_UPLOAD_NAME)
+        upload_files(service, folder_id_upload, FOLDER_UPLOAD_PATH)
     else:
-        print("No se subiran los archivos, pero si se guardaron en la carpeta 'out/videos'")
+        print("Files will not be uploaded, but they are saved in the 'out/videos' folder")
         
 def render_image(audio_folder_path, image_folder_path, combined_audio_folder, final_video_folder, fade_duration, resolution, fps, video_bitrate, audio_quality, overlay_video, use_api_DEZGO, api_prompt, api_execution, encoder, quality_level, aspect_ratio, use_audios_drive, upload_files_drive, upload_files_youtube, randomize_audios, randomize_name, overlay, opacity, blend_mode, preset, pix_fmt, cores):
 
     if use_audios_drive:
-        print("Descargando audios de drive")
-        service =authenticate()
+        print("Downloading audios from drive")
+        service = authenticate()
         list_and_download_audio_files(service)
     else:
-        print("No se descargaran audios de drive, se usaran los de la carpeta 'audios'")
+        print("Audios will not be downloaded from drive, those from the 'audios' folder will be used")
 
     files = os.listdir(audio_folder_path)
     audio_files = [f for f in files if f.endswith(('.mp3', '.wav', '.aac'))]
@@ -280,7 +281,7 @@ def render_image(audio_folder_path, image_folder_path, combined_audio_folder, fi
         random.shuffle(audio_files)
 
     if len(audio_files) == 0:
-        print("No hay suficientes audios para crear videos.")
+        print("Not enough audios to create videos.")
         return
 
     audio_segments = []
@@ -290,7 +291,7 @@ def render_image(audio_folder_path, image_folder_path, combined_audio_folder, fi
         audio_segments.append(faded_audio)
 
     if len(audio_segments) == 0:
-        print("No hay suficientes audios para crear videos.")
+        print("Not enough audios to create videos.")
         return
 
     combined_audio = concatenate_audios(audio_segments)
@@ -298,12 +299,12 @@ def render_image(audio_folder_path, image_folder_path, combined_audio_folder, fi
     combined_audio.export(combined_audio_path, format="mp3")
 
     if use_api_DEZGO:
-        print("Creando imagenes con api")
+        print("Creating images with API")
         create_images_ia(api_key, url_api, api_endpoint, api_prompt, api_width, api_height, api_sampler, api_model_id, api_negative_prompt, api_seed, api_format, api_guidance, api_transparent_background, 1, image_folder_path)
 
     image_file = [f for f in os.listdir(image_folder_path) if f.endswith(('.png', '.jpg', '.jpeg', '.gif'))][0]
     if len(image_file) == 0:
-        print("No hay suficientes imágenes para crear videos.")
+        print("Not enough images to create videos.")
         return    
     image_path = os.path.join(image_folder_path, image_file)
 
@@ -315,12 +316,12 @@ def render_image(audio_folder_path, image_folder_path, combined_audio_folder, fi
     finaly_image_render(image_path, combined_audio_path, output, resolution, fps, video_bitrate, audio_quality, overlay_video, overlay, opacity, blend_mode, preset, pix_fmt, encoder, quality_level, aspect_ratio, cores, upload_files_youtube)
     
     if upload_files_drive:
-         print(f"Subiendo archivos al drive en carpeta {FOLDER_UPLOAD_NAME}")
-         service = authenticate()
-         folder_id_upload = get_or_create_folder(service, FOLDER_UPLOAD_NAME)
-         upload_files(service, folder_id_upload, FOLDER_UPLOAD_PATH)
+        print(f"Uploading files to drive in folder {FOLDER_UPLOAD_NAME}")
+        service = authenticate()
+        folder_id_upload = get_or_create_folder(service, FOLDER_UPLOAD_NAME)
+        upload_files(service, folder_id_upload, FOLDER_UPLOAD_PATH)
     else:
-        print("No se subiran los archivos, pero si se guardaron en la carpeta 'out/videos'")
+        print("Files will not be uploaded, but they are saved in the 'out/videos' folder")
 
 
 def finaly_image_render(image_folder_path, combined_audio_folder, output, resolution, fps, video_bitrate, audio_quality, overlay_video, overlay, opacity, blend_mode, preset, pix_fmt, encoder, quality_level, aspect_ratio, cores, upload_files_youtube):
@@ -367,29 +368,29 @@ def finaly_image_render(image_folder_path, combined_audio_folder, output, resolu
             subprocess.run(command, check=True)
 
         if upload_files_youtube:
-            print(f"Subiendo archivo a youtube en carpeta {FOLDER_UPLOAD_NAME}")
+            print(f"Uploading file to YouTube in folder {FOLDER_UPLOAD_NAME}")
             youtube_service = authenticate_youtube()
             video_file_path = output
             title = f"Video {output}"
             upload_video_to_youtube(youtube_service, video_file_path, title, description, tags, category_id, privacy_status)
         else:
-            print("No se subiran los archivos a youtube, pero si se guardaron en la carpeta 'out/videos'")
+            print("Files will not be uploaded to YouTube, but they are saved in the 'out/videos' folder")
 
         end_time = time.time()
         elapsed_time = end_time - start_time
-        print(f"Video {output} creado con éxito.")
-        print(f"Tiempo de renderizado: {elapsed_time / 60:.2f} minutos")
+        print(f"Video {output} successfully created.")
+        print(f"Rendering time: {elapsed_time / 60:.2f} minutes")
 
 # Render Videos
 
 def render_massive_videos(audio_folder_path, video_folder_path, combined_audio_folder, inverted_folder_path, final_video_folder, fade_duration, resolution, fps, video_bitrate, audio_quality, overlay_video, invert_video, encoder, quality_level, aspect_ratio, use_audios_drive, upload_files_drive, upload_files_youtube, randomize_audios, randomize_name, overlay, opacity, blend_mode, preset, pix_fmt, cores):
       
     if use_audios_drive:
-        print("Descargando audios de drive")
-        service =authenticate()
+        print("Downloading audios from drive")
+        service = authenticate()
         list_and_download_audio_files(service)
     else:
-        print("No se descargaran audios de drive, se usaran los de la carpeta 'audios'")
+        print("Audios will not be downloaded from drive, those from the 'audios' folder will be used")
 
     video_files = [f for f in os.listdir(video_folder_path) if f.endswith(('.mp4', '.avi', '.mkv'))]
     audio_files = [f for f in os.listdir(audio_folder_path) if f.endswith(('.mp3', '.wav', '.aac'))]
@@ -401,7 +402,7 @@ def render_massive_videos(audio_folder_path, video_folder_path, combined_audio_f
     num_audios = len(audio_files)
 
     if num_videos == 0 or num_audios == 0:
-        print("No hay suficientes videos o audios para crear videos.")
+        print("Not enough videos or audios to create videos.")
         return
 
     audios_per_video = num_audios // num_videos
@@ -410,7 +411,7 @@ def render_massive_videos(audio_folder_path, video_folder_path, combined_audio_f
     audio_index = 0
 
     for i, video_file in enumerate(video_files):
-        print(f"Procesando video {i + 1}/{num_videos}: {video_file}")
+        print(f"Processing video {i + 1}/{num_videos}: {video_file}")
 
         audio_segments = []
 
@@ -450,21 +451,21 @@ def render_massive_videos(audio_folder_path, video_folder_path, combined_audio_f
 
 
     if upload_files_drive:
-         print(f"Subiendo archivos al drive en carpeta {FOLDER_UPLOAD_NAME}")
+         print(f"Uploading files to drive in folder {FOLDER_UPLOAD_NAME}")
          service = authenticate()
          folder_id_upload = get_or_create_folder(service, FOLDER_UPLOAD_NAME)
          upload_files(service, folder_id_upload, FOLDER_UPLOAD_PATH)
     else:
-        print("No se subiran los archivos, pero si se guardaron en la carpeta 'out/videos'")
+        print("Files will not be uploaded, but they are saved in the 'out/videos' folder")
 
 def render_video(video_folder_path, audio_folder_path, combined_audio_folder, inverted_folder_path, final_video_folder, fade_duration, resolution, fps, video_bitrate, audio_quality, overlay_video, invert_video, encoder, quality_level, aspect_ratio, use_audios_drive, upload_files_drive, upload_files_youtube, randomize_audios, randomize_name, overlay, opacity, blend_mode, preset, pix_fmt, cores):
     
     if use_audios_drive:
-        print("Descargando audios de drive")
-        service =authenticate()
+        print("Downloading audios from drive")
+        service = authenticate()
         list_and_download_audio_files(service)
     else:
-        print("No se descargaran audios de drive, se usaran los de la carpeta 'audios'")
+        print("Audios will not be downloaded from drive, those from the 'audios' folder will be used")
 
     files = os.listdir(audio_folder_path)
     audio_files = [f for f in files if f.endswith(('.mp3', '.wav', '.aac'))]
@@ -473,7 +474,7 @@ def render_video(video_folder_path, audio_folder_path, combined_audio_folder, in
         random.shuffle(audio_files)
 
     if not audio_files:
-        print("No se encontraron archivos de audio.")
+        print("No audio files found.")
         return
 
     audio_segments = []
@@ -483,17 +484,17 @@ def render_video(video_folder_path, audio_folder_path, combined_audio_folder, in
         audio_segments.append(faded_audio)
 
     if not audio_segments:
-        print("No se pudieron procesar los archivos de audio.")
+        print("Audio files could not be processed.")
         return
     
     combined_audio = concatenate_audios(audio_segments)
     combined_audio_path = os.path.join(combined_audio_folder, 'combined_audio.mp3')
     combined_audio.export(combined_audio_path, format="mp3")
 
-    # buscamos un video en la carpeta sin importar el nombre de archivo que termine en .mp4, .avi o .mkv
+    # Searching for a video file in the folder, regardless of the filename, that ends in .mp4, .avi, or .mkv
     video_file = [f for f in os.listdir(video_folder_path) if f.endswith(('.mp4', '.avi', '.mkv'))][0]
     if not video_file:
-        print("No se encontraron archivos de video.")
+        print("No video files found.")
         return
     video_path = os.path.join(video_folder_path, video_file)
 
@@ -505,22 +506,22 @@ def render_video(video_folder_path, audio_folder_path, combined_audio_folder, in
     if invert_video:
         inverted_video = os.path.join(inverted_folder_path, 'inverted_video.mp4')
         invert_video_render(video_path, inverted_video, fps)
-        print(f"Video invertido: {inverted_video}")
+        print(f"Inverted video: {inverted_video}")
         combined_video_path = os.path.join(inverted_folder_path, 'combined_video.mp4')
         command = ['ffmpeg', '-r', f'{fps}', '-i', video_path, '-r', f'{fps}', '-i', inverted_video, '-filter_complex', '[0:v][1:v]concat=n=2:v=1:a=0[out]', '-map', '[out]', combined_video_path]
         subprocess.run(command, check=True)
-        print(f"Video combinado: {combined_video_path}")
+        print(f"Combined video: {combined_video_path}")
         finaly_video_render(combined_video_path, combined_audio_path, output, resolution, fps, video_bitrate, audio_quality, overlay_video, overlay, opacity, blend_mode, encoder, preset, pix_fmt, aspect_ratio, cores, upload_files_youtube)
     else:
         finaly_video_render(video_path, combined_audio_path, output, resolution, fps, video_bitrate, audio_quality, overlay_video, overlay, opacity, blend_mode, encoder, preset, pix_fmt, aspect_ratio, cores, upload_files_youtube)
 
     if upload_files_drive:
-         print(f"Subiendo archivos al drive en carpeta {FOLDER_UPLOAD_NAME}")
+         print(f"Uploading files to drive in folder {FOLDER_UPLOAD_NAME}")
          service = authenticate()
          folder_id_upload = get_or_create_folder(service, FOLDER_UPLOAD_NAME)
          upload_files(service, folder_id_upload, FOLDER_UPLOAD_PATH)
     else:
-        print("No se subiran los archivos, pero si se guardaron en la carpeta 'out/videos'")
+        print("Files will not be uploaded, but they are saved in the 'out/videos' folder")
 
 
 def finaly_video_render(video_folder_path, combined_audio_folder, output, resolution, fps, video_bitrate, audio_quality, overlay_video, overlay, opacity, blend_mode, encoder, preset, pix_fmt, aspect_ratio, cores, upload_files_youtube):
@@ -567,7 +568,6 @@ def finaly_video_render(video_folder_path, combined_audio_folder, output, resolu
             subprocess.run(command_step1, check=True)
             subprocess.run(command_step2, check=True)
 
-
             os.remove(temp)
         else:
             command = [
@@ -579,71 +579,84 @@ def finaly_video_render(video_folder_path, combined_audio_folder, output, resolu
             subprocess.run(command, check=True)
             
         if upload_files_youtube:
-            print(f"Subiendo archivo a youtube en carpeta {FOLDER_UPLOAD_NAME}")
+            print(f"Uploading file to YouTube in folder {FOLDER_UPLOAD_NAME}")
             youtube_service = authenticate_youtube()
             video_file_path = output
             title = f"{output}"
             upload_video_to_youtube(youtube_service, video_file_path, title, description, tags, category_id, privacy_status)
         else:
-            print("No se subiran los archivos a youtube, pero si se guardaron en la carpeta 'out/videos'")
+            print("Files will not be uploaded to YouTube, but they are saved in the 'out/videos' folder")
             
 
         end_time = time.time()
         elapsed_time = end_time - start_time
-        print(f"Video {output} creado con éxito.")
-        print(f"Tiempo de renderizado: {elapsed_time / 60:.2f} minutos")
+        print(f"Video {output} successfully created.")
+        print(f"Rendering time: {elapsed_time / 60:.2f} minutes")
 
-################## FUNCIONES SUNO ################
+################## SUNO FUNCTIONS ################
 def create_audios_from_api(suno_prompt, suno_execution, instrumental, suno_wait_audio, audio_folder_path, base_api_suno_url):
+    # Split the prompts by '|'
+    prompts = suno_prompt.split('|')
+    num_prompts = len(prompts)
 
-    for i in range(int(suno_execution)):
-        print(f"{Fore.CYAN}Creando audio (x2) {i+1} de {suno_execution}{Style.RESET_ALL}")
-        
-        data = generate_audio_by_prompt({
-            "prompt": suno_prompt,
-            "make_instrumental": instrumental,
-            "wait_audio": suno_wait_audio
-        }, base_api_suno_url)
+    # Calculate how many executions per prompt
+    audios_per_prompt = int(suno_execution) // num_prompts
+    remaining_audios = int(suno_execution) % num_prompts  # To distribute remaining executions
 
-        ids = f"{data[0]['id']},{data[1]['id']}"
-        print(f"{Fore.YELLOW}IDs generados: {ids}{Style.RESET_ALL}")
+    audio_count = 0
+    for idx, prompt in enumerate(prompts):
+        # Adjust the number of executions for the first prompts if there are remaining executions
+        num_executions = audios_per_prompt + (1 if idx < remaining_audios else 0)
 
-        # Esperar hasta que los audios estén listos
-        for _ in range(60):
-            data = get_audio_information(ids)
-            if data[0]["status"] == 'complete' and data[1]["status"] == 'complete':
-                audio_url_1 = data[0]['audio_url']
-                audio_url_2 = data[1]['audio_url']
-                
-                # Extraer nombres de archivos desde las URLs
-                file_name_1 = f"{data[0]['title']}_1.mp3"
-                file_name_2 = f"{data[1]['title']}_2.mp3"
-                
-                unique_file_name_1 = ensure_unique_file_name(file_name_1, audio_folder_path)
-                unique_file_name_2 = ensure_unique_file_name(file_name_2, audio_folder_path)
+        for i in range(num_executions):
+            audio_count += 1
+            print(f"{Fore.CYAN}Creating audio (x2) {audio_count} of {suno_execution} for prompt {idx+1}: {prompt}{Style.RESET_ALL}")
+            
+            data = generate_audio_by_prompt({
+                "prompt": prompt,
+                "make_instrumental": instrumental,
+                "wait_audio": suno_wait_audio
+            }, base_api_suno_url)
 
-                print(f"{Fore.GREEN}{data[0]['id']} ==> {audio_url_1}{Style.RESET_ALL}")
-                print(f"{Fore.GREEN}{data[1]['id']} ==> {audio_url_2}{Style.RESET_ALL}")
+            ids = f"{data[0]['id']},{data[1]['id']}"
+            print(f"{Fore.YELLOW}Generated IDs: {ids}{Style.RESET_ALL}")
 
-                # Descargar los audios
-                download_audio(audio_url_1, unique_file_name_1, audio_folder_path)
-                download_audio(audio_url_2, unique_file_name_2, audio_folder_path)
+            # Wait until audios are ready
+            for _ in range(60):
+                data = get_audio_information(ids)
+                if data[0]["status"] == 'complete' and data[1]["status"] == 'complete':
+                    audio_url_1 = data[0]['audio_url']
+                    audio_url_2 = data[1]['audio_url']
+                    
+                    # Extract file names from URLs
+                    file_name_1 = f"{data[0]['title']}_1.mp3"
+                    file_name_2 = f"{data[1]['title']}_2.mp3"
+                    
+                    unique_file_name_1 = ensure_unique_file_name(file_name_1, audio_folder_path)
+                    unique_file_name_2 = ensure_unique_file_name(file_name_2, audio_folder_path)
 
-                # Verificar duración de los audios
-                duration_1 = get_audio_duration(os.path.join(audio_folder_path, unique_file_name_1))
-                duration_2 = get_audio_duration(os.path.join(audio_folder_path, unique_file_name_2))
+                    print(f"{Fore.GREEN}{data[0]['id']} ==> {audio_url_1}{Style.RESET_ALL}")
+                    print(f"{Fore.GREEN}{data[1]['id']} ==> {audio_url_2}{Style.RESET_ALL}")
 
-                if duration_1 < 60:
-                    print(f"{Fore.RED}Duración de {unique_file_name_1} demasiado corta, se eliminará{Style.RESET_ALL}")
-                    os.remove(os.path.join(audio_folder_path, unique_file_name_1))
-                if duration_2 < 60:
-                    print(f"{Fore.RED}Duración de {unique_file_name_2} demasiado corta, se eliminará{Style.RESET_ALL}")
-                    os.remove(os.path.join(audio_folder_path, unique_file_name_2))
+                    # Download the audios
+                    download_audio(audio_url_1, unique_file_name_1, audio_folder_path)
+                    download_audio(audio_url_2, unique_file_name_2, audio_folder_path)
 
-                break
-            else:
-                print(f"{Fore.MAGENTA}Esperando que los audios estén completos...{Style.RESET_ALL}")
-                time.sleep(20)
+                    # Check audio durations
+                    duration_1 = get_audio_duration(os.path.join(audio_folder_path, unique_file_name_1))
+                    duration_2 = get_audio_duration(os.path.join(audio_folder_path, unique_file_name_2))
+
+                    if duration_1 < 60:
+                        print(f"{Fore.RED}Duration of {unique_file_name_1} too short, it will be deleted{Style.RESET_ALL}")
+                        os.remove(os.path.join(audio_folder_path, unique_file_name_1))
+                    if duration_2 < 60:
+                        print(f"{Fore.RED}Duration of {unique_file_name_2} too short, it will be deleted{Style.RESET_ALL}")
+                        os.remove(os.path.join(audio_folder_path, unique_file_name_2))
+
+                    break
+                else:
+                    print(f"{Fore.MAGENTA}Waiting for audios to be completed...{Style.RESET_ALL}")
+                    time.sleep(20)
 
 def ensure_unique_file_name(file_name, folder_path):
 
@@ -667,19 +680,19 @@ def extend_audio(payload):
     response = requests.post(url, json=payload, headers={'Content-Type': 'application/json'})
     return response.json()
 
-def generate_audio_by_prompt(payload,base_api_suno_url):
+def generate_audio_by_prompt(payload, base_api_suno_url):
     url = f"{base_api_suno_url}/api/generate"
     response = requests.post(url, json=payload, headers={'Content-Type': 'application/json'})
     if response.status_code == 200:
-            try:
-                data = response.json()
-                return data
-            except requests.exceptions.JSONDecodeError:
-                print("Error: La respuesta no es un JSON válido.")
-                print(f"Respuesta del servidor: {response.text}")
+        try:
+            data = response.json()
+            return data
+        except requests.exceptions.JSONDecodeError:
+            print("Error: The response is not a valid JSON.")
+            print(f"Server response: {response.text}")
     else:
-            print(f"Error en la solicitud: {response.status_code}")
-            print(f"Respuesta del servidor: {response.text}")
+        print(f"Request error: {response.status_code}")
+        print(f"Server response: {response.text}")
 
     return response.json()
 
@@ -712,39 +725,35 @@ def download_audio(audio_url, file_name, save_path):
         if response.status_code == 200:
             with open(file_path, 'wb') as f:
                 f.write(response.content)
-            print(f"Audio descargado y guardado como {file_name}")
+            print(f"Audio downloaded and saved as {file_name}")
         else:
-            print(f"Error al descargar el audio desde {audio_url}: {response.status_code}")
+            print(f"Error downloading audio from {audio_url}: {response.status_code}")
     except Exception as e:
-        print(f"Se produjo un error al descargar el audio: {e}")
+        print(f"An error occurred while downloading the audio: {e}")
 
 
 ################## FUNCIONES Dezgo ################
-
-# funcion para generar imagenes masivas con dezgo mediante su api
-import re
-
 def create_images_ia(api_key, url_api, api_endpoint, api_prompt, api_width, api_height, api_sampler, api_model_id, api_negative_prompt, api_seed, api_format, api_guidance, api_transparent_background, api_execution, image_folder_path, retry_delay=5, max_retries=3):
     url = f"{url_api}/{api_endpoint}"
     headers = {
         'X-Dezgo-Key': api_key
     }
 
-    # Dividir los prompts por el separador "|"
+    # Split the prompts by the "|" separator
     prompts = api_prompt.split('|')
     num_prompts = len(prompts)
     
-    # Calcular cuántas imágenes por prompt
+    # Calculate how many images per prompt
     images_per_prompt = int(api_execution) // num_prompts
-    remaining_images = int(api_execution) % num_prompts  # Para distribuir el resto
+    remaining_images = int(api_execution) % num_prompts  # To distribute the remaining images
 
     image_count = 0
     for idx, prompt in enumerate(prompts):
-        # Ajustar el número de imágenes para los primeros prompts si hay imágenes restantes
+        # Adjust the number of images for the first prompts if there are remaining images
         num_images = images_per_prompt + (1 if idx < remaining_images else 0)
 
-        # Limpiar el prompt para usarlo como parte del nombre de archivo
-        clean_prompt = re.sub(r'[^\w\s-]', '', prompt).strip().replace(' ', '_')  # Elimina caracteres no permitidos y reemplaza espacios por guiones bajos
+        # Clean the prompt to use it as part of the file name
+        clean_prompt = re.sub(r'[^\w\s-]', '', prompt).strip().replace(' ', '_')  # Removes invalid characters and replaces spaces with underscores
 
         for i in range(num_images):
             success = False
@@ -766,105 +775,105 @@ def create_images_ia(api_key, url_api, api_endpoint, api_prompt, api_width, api_
             while not success and attempts < max_retries:
                 try:
                     response = requests.post(url, headers=headers, files=files)
-                    response.raise_for_status()  # Levanta una excepción en códigos 4xx o 5xx
+                    response.raise_for_status()  # Raise an exception for 4xx or 5xx codes
 
                     if response.status_code == 200:
                         image_count += 1
-                        print(f'Solicitud exitosa para prompt {idx+1}, imagen {image_count}')
-                        # Guardar la imagen en image_folder_path con el nombre del prompt original
+                        print(f'Successful request for prompt {idx+1}, image {image_count}')
+                        # Save the image in image_folder_path with the original prompt name
                         image_filename = f'{clean_prompt}_{i+1}.jpg'
                         image_path = os.path.join(image_folder_path, image_filename)
                         with open(image_path, 'wb') as f:
                             f.write(response.content)
-                            print(f'Imagen guardada en: {image_path}')
+                            print(f'Image saved at: {image_path}')
                         success = True
                     else:
-                        print(f'Error en la solicitud de imagen {image_count}: {response.status_code}, {response.text}')
+                        print(f'Error in the request for image {image_count}: {response.status_code}, {response.text}')
                         attempts += 1
                         if attempts < max_retries:
-                            print(f'Reintentando en {retry_delay} segundos...')
+                            print(f'Retrying in {retry_delay} seconds...')
                             time.sleep(retry_delay)
                 except requests.exceptions.RequestException as e:
-                    print(f'Error en la solicitud: {e}')
+                    print(f'Request error: {e}')
                     attempts += 1
                     if attempts < max_retries:
-                        print(f'Reintentando en {retry_delay} segundos...')
+                        print(f'Retrying in {retry_delay} seconds...')
                         time.sleep(retry_delay)
 
             if not success:
-                print(f'No se pudo completar la solicitud de imagen {image_count} después de {max_retries} intentos.')
+                print(f'Could not complete the request for image {image_count} after {max_retries} attempts.')
 
 
-################## FUNCIONES DRIVE ################
+################## DRIVE FUNCTIONS ################
 
 def authenticate():
-    # Cargar las credenciales de cliente desde el archivo de credenciales
+    # Load client credentials from the credentials file
 
     creds = None
 
-    # Cargar las credenciales desde el archivo JSON del servicio
+    # Load credentials from the service account JSON file
     if os.path.exists(SERVICE_ACCOUNT_SECRET_FILE):
         creds = service_account.Credentials.from_service_account_file(
             SERVICE_ACCOUNT_SECRET_FILE, scopes=SCOPES
         )
 
-    # Si las credenciales han expirado, refrescarlas
+    # If the credentials have expired, refresh them
     if not creds.valid:
         creds.refresh(Request())
 
-    # Construir el servicio de Google Drive API
+    # Build the Google Drive API service
     service = build('drive', 'v3', credentials=creds)
     return service
 
 def list_and_download_audio_files(service):
     try:
-        # Obtener el ID de la carpeta 'audio' o crearla si no existe
+        # Get the 'audio' folder ID or create it if it doesn't exist
         folder_id = get_or_create_folder(service, FOLDER_NAME)
         if not folder_id:
-            print(f'No se pudo obtener ni crear la carpeta "{FOLDER_NAME}" en tu Google Drive.')
+            print(f'Could not get or create the folder "{FOLDER_NAME}" on your Google Drive.')
             return
 
-        print(f'ID de la carpeta "audio": {folder_id}')
+        print(f'ID of the "audio" folder: {folder_id}')
 
-        # Construir la cadena de consulta para los tipos MIME
+        # Build the query string for the MIME types
         mime_query = ' or '.join([f"mimeType='{mime}'" for mime in AUDIO_MIME_TYPES])
 
-        # Obtener la lista de archivos de audio en la carpeta 'audio'
+        # Get the list of audio files in the 'audio' folder
         results = service.files().list(
             q=f"'{folder_id}' in parents and trashed=false and ({mime_query})",
             fields="nextPageToken, files(name, id)").execute()
         items = results.get('files', [])
 
-        print(f'Archivos de audio encontrados en la carpeta "{FOLDER_NAME}":')
+        print(f'Audio files found in the "{FOLDER_NAME}" folder:')
         for item in items:
             print(f"- {item['name']}")
 
         if not items:
-            print("No se encontraron archivos de audio en la carpeta.")
+            print("No audio files found in the folder.")
             return
 
-        # Preguntar al usuario qué archivos desea descargar
+        # Ask the user which files to download
         download_choice = 'all'
 
         if download_choice.lower() == 'all':
-            # Descargar todos los archivos de audio de la carpeta
+            # Download all audio files from the folder
             for item in items:
                 download_success = download_file(service, item['name'], item['id'], DOWNLOAD_PATH)
                 if download_success:
-                    print(f'Archivo "{item["name"]}" descargado exitosamente.')
+                    print(f'File "{item["name"]}" successfully downloaded.')
                 else:
-                    print(f'Error al descargar el archivo "{item["name"]}".')
+                    print(f'Error downloading the file "{item["name"]}".')
 
     except HttpError as error:
-        print(f'Error de HTTP: {error}')
+        print(f'HTTP Error: {error}')
     except Exception as e:
-        print(f'Error general: {e}')
+        print(f'General error: {e}')
 
 def get_or_create_folder(service, folder_name):
-    # Función para obtener el ID de la carpeta por nombre o crearla si no existe
+    # Function to get the folder ID by name or create it if it doesn't exist
     folder_id = None
 
-    # Verificar si la carpeta existe
+    # Check if the folder exists
     results = service.files().list(
         q=f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder' and trashed=false",
         fields="files(id)").execute()
@@ -872,7 +881,7 @@ def get_or_create_folder(service, folder_name):
     if items:
         folder_id = items[0]['id']
     else:
-        # Crear la carpeta si no existe
+        # Create the folder if it doesn't exist
         file_metadata = {
             'name': folder_name,
             'mimeType': 'application/vnd.google-apps.folder'
@@ -883,27 +892,27 @@ def get_or_create_folder(service, folder_name):
     return folder_id
 
 def download_file(service, file_name, file_id, download_path):
-    # Función para descargar un archivo por nombre desde una carpeta específica
+    # Function to download a file by name from a specific folder
     try:
         request = service.files().get_media(fileId=file_id)
         file_stream = request.execute()
 
-        # Guardar el archivo descargado en el directorio local especificado
+        # Save the downloaded file to the specified local directory
         download_file_path = os.path.join(download_path, file_name)
         with open(download_file_path, 'wb') as f:
             f.write(file_stream)
 
-        return True  # Indicar que la descarga fue exitosa
+        return True  # Indicate that the download was successful
 
     except HttpError as error:
-        print(f'Error al descargar el archivo "{file_name}": {error}')
-        return False  # Indicar que la descarga falló
+        print(f'Error downloading the file "{file_name}": {error}')
+        return False  # Indicate that the download failed
     except Exception as e:
-        print(f'Error general al descargar el archivo "{file_name}": {e}')
-        return False  # Indicar que la descarga falló
+        print(f'General error downloading the file "{file_name}": {e}')
+        return False  # Indicate that the download failed
 
 def upload_files(service, folder_id, local_folder_path):
-    # Función para subir todos los archivos de una carpeta local a una carpeta de Google Drive
+    # Function to upload all files from a local folder to a Google Drive folder
     for file_name in os.listdir(local_folder_path):
         file_path = os.path.join(local_folder_path, file_name)
         if os.path.isfile(file_path):
@@ -918,9 +927,10 @@ def upload_files(service, folder_id, local_folder_path):
                     media_body=media,
                     fields='id'
                 ).execute()
-                print(f'Archivo "{file_name}" subido exitosamente con ID "{file.get("id")}".')
+                print(f'File "{file_name}" successfully uploaded with ID "{file.get("id")}".')
             except HttpError as error:
-                print(f'Error al subir el archivo "{file_name}": {error}')
+                print(f'Error uploading the file "{file_name}": {error}')
+
 
 ################## FUNCIONES YOUTUBE ################
 
@@ -1084,21 +1094,20 @@ def upload_all_videos_to_youtube(folder_path):
             title = f"{filename}"  # Título del video basado en el nombre del archivo
             upload_video_to_youtube(youtube_service, video_file_path, title, description, tags, category_id, privacy_status)
 
-
-##################### EJECUTAMOS EL PROGRAMA ###################
+##################### EXECUTE THE PROGRAM ###################
 def loading_effect():
     for _ in range(5):
         for char in '|/-\\':
-            sys.stdout.write(f'\r{Fore.YELLOW}Cargando {char} {Style.RESET_ALL}')
+            sys.stdout.write(f'\r{Fore.YELLOW}Loading {char} {Style.RESET_ALL}')
             sys.stdout.flush()
             time.sleep(0.2)
     
-    # Limpiar la línea de carga después de terminar
+    # Clear the loading line after finishing
     sys.stdout.write('\r' + ' ' * 20 + '\r')
     sys.stdout.flush()
 
 def ask_user_option(prompt, options): 
-    converted_options = ['Sí' if opt is True else 'No' if opt is False else opt for opt in options]
+    converted_options = ['Yes' if opt is True else 'No' if opt is False else opt for opt in options]
 
     while True:
         print(f"{Fore.BLUE}## {prompt} ##{Style.RESET_ALL}")  
@@ -1106,64 +1115,64 @@ def ask_user_option(prompt, options):
             print(f'{Fore.GREEN}{i} - {option}{Style.RESET_ALL}') 
         
         try:
-            choice = int(input(f'{Fore.YELLOW}Selecciona un número: {Style.RESET_ALL}')) 
+            choice = int(input(f'{Fore.YELLOW}Select a number: {Style.RESET_ALL}')) 
             
             if 1 <= choice <= len(converted_options):
-                return options[choice - 1]  # Devolver el valor original, no el convertido
+                return options[choice - 1]  # Return the original value, not the converted one
             else:
-                print(f"{Fore.RED}Por favor, elige un número entre 1 y {len(converted_options)}.{Style.RESET_ALL}")  
+                print(f"{Fore.RED}Please choose a number between 1 and {len(converted_options)}.{Style.RESET_ALL}")  
 
         except ValueError:
-            print(f"{Fore.RED}Entrada no válida. Por favor, ingresa un número.{Style.RESET_ALL}")  
+            print(f"{Fore.RED}Invalid input. Please enter a number.{Style.RESET_ALL}")  
 
 
 def start_render():
 
-    # Variables y funciones generales
-    fps = 30 # 25 o 30
+    # General variables and functions
+    fps = 30 # 25 or 30
     resolution = "1920x1080" # '1920x1080','1280x720','854x480','640x360'
     aspect_ratio = "16:9" # '16:9','4:3','1:1'
     video_bitrate = "3000k" # '1000k','2000k','3000k','4000k'
 
     audio_quality = "192k" # '128k','192k','320k'
-    fade_duration = 3000 # en milisegundos
-    randomize_audios = True # True o False
-    randomize_name = True # True o False
+    fade_duration = 3000 # in milliseconds
+    randomize_audios = True # True or False
+    randomize_name = True # True or False
 
-    overlay = True # True o False
+    overlay = True # True or False
     overlay_name = "dust_final.mp4" # 'particles.mp4', 'vhs.mp4', 'vhs-lines.mp4', 'dust.mp4', 'dust_final.mp4'
-    opacity = 1 # entre 0 y 1
+    opacity = 1 # between 0 and 1
     blend_mode = "addition" # 'addition','multiply','screen','overlay','darken','lighten','color-dodge','color-burn','hard-light','soft-light','difference','exclusion','hue','saturation','color','luminosity'
 
-    invert_video = True # True o False
+    invert_video = True # True or False
 
     encoder = "h264_videotoolbox" # 'libx264','h264_nvenc','h264_qsv','h264_amf','h264_videotoolbox'
-    quality_level = 3  # 1 es la mejor calidad, 3 es la más baja calidad
+    quality_level = 3  # 1 is the best quality, 3 is the lowest quality
 
-    # Api para crear imagenes
-    use_api_DEZGO = False # True o False
-    api_prompt = "magic Landscape tokyo realistic 4k high quality" # prompt de la api
-    api_execution = 19 # cantidad de imagenes que se crearan con la api
+    # API to create images
+    use_api_DEZGO = False # True or False
+    api_prompt = "magic Landscape tokyo realistic 4k high quality" # API prompt
+    api_execution = 19 # number of images to create with the API
 
-    # Variables de configuración suno
+    # Suno configuration variables
     use_suno_api = False
     suno_prompt = "Lofi ambient chill"
-    insrtumental = True
+    instrumental = True
     suno_wait_audio = True
     suno_execution = 22
 
-    use_audios_drive = False # True o False
-    upload_files_drive = False # True o False
-    upload_files_youtube = False # True o False
+    use_audios_drive = False # True or False
+    upload_files_drive = False # True or False
+    upload_files_youtube = False # True or False
 
-    # Mapeo de presets según la calidad
+    # Preset mapping according to quality
     quality_presets = {
-        1: 'veryslow',  # Mejor calidad
-        2: 'medium',    # Calidad media
-        3: 'veryfast'   # Calidad baja
+        1: 'veryslow',  # Best quality
+        2: 'medium',    # Medium quality
+        3: 'veryfast'   # Low quality
     }
 
-    # Configuración del encoder con presets según la calidad
+    # Encoder settings with presets according to quality
     encoder_settings = {
         'libx264': {'pix_fmt': 'yuv420p','presets': quality_presets},
         'h264_nvenc': {'pix_fmt': 'yuv420p','presets': {1: 'p1', 2: 'p4', 3: 'p7'}},
@@ -1187,7 +1196,7 @@ def start_render():
     preset = encoder_settings[encoder]['presets'][quality_level]
     pix_fmt = encoder_settings[encoder]['pix_fmt']
 
-    # Definir rutas para las carpetas específicas
+    # Define paths for specific folders
     audio_folder_path = os.path.join(base_path, "in", "audios")
     image_folder_path = os.path.join(base_path, "in", "imagenes")
     video_folder_path = os.path.join(base_path, "in", "videos")
@@ -1201,209 +1210,205 @@ def start_render():
     loading_effect()
     print('\n')
 
-    # verificando carpetas in y out
+    # Checking input and output folders
     print('Checking folders...')
     create_folders(base_path)
     print('\n')
 
-    render_type = ask_user_option('¿Que tipo de render quieres?', ['render_image', 'render_video', 'render_image_massive', 'render_video_massive', 'upload_youtube', 'generate_images', 'generate_audios'])
+
+    render_type = ask_user_option('What type of render do you want?', ['render_image', 'render_video', 'render_image_massive', 'render_video_massive', 'upload_youtube', 'generate_images', 'generate_audios'])
     print('\n')
-    
+
     if render_type != "upload_youtube":
-        delete_folders = ask_user_option('Es necesario eliminar el contenido de las carpetas OUT(aun que esten vacias), continuamos?', [True, False])
+        delete_folders = ask_user_option('It is necessary to delete the contents of the OUT folders (even if they are empty), do we continue?', [True, False])
 
         if delete_folders:
             print('Deleting folders...')
             clear_folder(final_video_folder)
             clear_folder(combined_audio_folder)
             clear_folder(inverted_folder_path)
-        else :
-            print('No se eliminará el contenido de las carpetas OUT')
-            print('Por favor asegurate de que el contenido de las carpetas OUT esté limpio antes de renderizar')
-            print('Proceso cancelado')
+        else:
+            print('The contents of the OUT folders will not be deleted')
+            print('Please make sure the OUT folders are clean before rendering')
+            print('Process canceled')
             return
 
     print('\n')
 
-    delete_folders = ask_user_option('¿Quieres eliminar el contenido de las carpetas IN (en caso de seleccionar si te preguntaremos que carpetas eliminar)?', [True, False])
+    delete_folders = ask_user_option('Do you want to delete the contents of the IN folders (if you select yes, we will ask you which folders to delete)?', [True, False])
 
     if delete_folders:
         print('Deleting folders...')
-        if ask_user_option('¿Quieres eliminar el contenido de la carpeta imagenes (recomendado si usas DEZGO)?', [True, False]):
+        if ask_user_option('Do you want to delete the contents of the images folder (recommended if using DEZGO)?', [True, False]):
             clear_folder(image_folder_path)
-        if ask_user_option('¿Quieres eliminar el contenido de la carpeta audios (recomendado si usas SUNO)?', [True, False]):
+        if ask_user_option('Do you want to delete the contents of the audio folder (recommended if using SUNO)?', [True, False]):
             clear_folder(audio_folder_path)
-        if ask_user_option('¿Quieres eliminar el contenido de la carpeta videos?', [True, False]):
+        if ask_user_option('Do you want to delete the contents of the videos folder?', [True, False]):
             clear_folder(video_folder_path)
     print('\n')
 
     if render_type not in {'upload_youtube', 'generate_images', 'generate_audios'}:
-        config = ask_user_option('¿Quieres configurar el render a continuación?', [True, False])
+        config = ask_user_option('Do you want to configure the render now?', [True, False])
 
 
         if config:
-            # Preguntas para las variables generales
-            fps = int(ask_user_option('Selecciona los FPS:', [20, 25, 30, 60]))
-            resolution = ask_user_option('Selecciona la resolución:', ['1920x1080', '1280x720', '854x480', '640x360'])
-            aspect_ratio = ask_user_option('Selecciona la relación de aspecto:', ['16:9', '4:3', '1:1'])
-            video_bitrate = ask_user_option('Selecciona el bitrate del video:', ['1000k', '2000k', '3000k', '4000k'])
-            encoder = ask_user_option('Selecciona el codificador de video:', ['libx264', 'h264_nvenc', 'h264_qsv', 'h264_amf', 'h264_videotoolbox'])
-            quality_level = int(ask_user_option('Selecciona el nivel de calidad 3 (alta), 2 (media) o 1 (baja):', [1, 2, 3]))
-            audio_quality = ask_user_option('Selecciona la calidad del audio:', ['128k', '192k', '320k'])
-            fade_duration = int(input('Ingresa la duración del fade en milisegundos  (ej. 3000):'))
-            randomize_audios = ask_user_option('¿Quieres randomizar los audios?', [True, False]) 
-            randomize_name = ask_user_option('¿Quieres randomizar los nombres?', [True, False]) 
+            # Questions for general variables
+            fps = int(ask_user_option('Select FPS:', [20, 25, 30, 60]))
+            resolution = ask_user_option('Select resolution:', ['1920x1080', '1280x720', '854x480', '640x360'])
+            aspect_ratio = ask_user_option('Select aspect ratio:', ['16:9', '4:3', '1:1'])
+            video_bitrate = ask_user_option('Select video bitrate:', ['1000k', '2000k', '3000k', '4000k'])
+            encoder = ask_user_option('Select video encoder:', ['libx264', 'h264_nvenc', 'h264_qsv', 'h264_amf', 'h264_videotoolbox'])
+            quality_level = int(ask_user_option('Select quality level 3 (high), 2 (medium), or 1 (low):', [1, 2, 3]))
+            audio_quality = ask_user_option('Select audio quality:', ['128k', '192k', '320k'])
+            fade_duration = int(input('Enter fade duration in milliseconds (e.g. 3000):'))
+            randomize_audios = ask_user_option('Do you want to randomize the audios?', [True, False]) 
+            randomize_name = ask_user_option('Do you want to randomize the names?', [True, False]) 
             
-            overlay = ask_user_option('¿Quieres usar un overlay?', [True, False])
+            overlay = ask_user_option('Do you want to use an overlay?', [True, False])
             if overlay:
-                overlay_name = ask_user_option('Ingresa el nombre del overlay:', ['snow.mp4', 'particles.mp4', 'vhs.mp4', 'vhs-lines.mp4', 'dust.mp4', 'dust-final.mp4'])
-                opacity = float(input('Ingresa la opacidad del overlay (0 a 1): '))
-                blend_mode = ask_user_option('Selecciona el modo de mezcla:', ['addition', 'multiply', 'screen', 'overlay', 'darken', 'lighten', 'hard-light', 'soft-light'])
+                overlay_name = ask_user_option('Enter the overlay name:', ['snow.mp4', 'particles.mp4', 'vhs.mp4', 'vhs-lines.mp4', 'dust.mp4', 'dust-final.mp4'])
+                opacity = float(input('Enter the overlay opacity (0 to 1): '))
+                blend_mode = ask_user_option('Select the blend mode:', ['addition', 'multiply', 'screen', 'overlay', 'darken', 'lighten', 'hard-light', 'soft-light'])
 
             if render_type == 'render_video' or render_type == 'render_video_massive':
-                invert_video = ask_user_option('¿Quieres invertir el video?', [True, False])
+                invert_video = ask_user_option('Do you want to invert the video?', [True, False])
 
             if render_type == 'render_image_massive' or render_type == 'render_image':
-                use_api_DEZGO = ask_user_option('¿Usar la API DEZGO para crear imágenes?', [True, False])
+                use_api_DEZGO = ask_user_option('Use the DEZGO API to create images?', [True, False])
                 if use_api_DEZGO:
-                    api_prompt = input('Ingresa el prompt de la API: ')
-                    api_execution = int(input('Ingresa la cantidad de imágenes a crear con la API: '))
+                    api_prompt = input('Enter the API prompt (use | to separate different prompts): ')
+                    api_execution = int(input('Enter the number of images to create with the API: '))
 
-            use_suno_api = ask_user_option('¿Usar la API Suno para crear audios?', [True, False])
+            use_suno_api = ask_user_option('Use the Suno API to create audios?', [True, False])
             if use_suno_api:
-                suno_prompt = input('Ingresa el prompt de la API Suno: ')
-                suno_execution = int(input('Ingresa la cantidad de audios a crear con la API Suno (Genera 2 audios por ejecución): '))
+                suno_prompt = input('Enter the Suno API prompt (use | to separate different prompts):')
+                suno_execution = int(input('Enter the number of audios to create with the Suno API (Generates 2 audios per execution): '))
 
-            # Variables adicionales
-            #use_audios_drive = ask_user_option('¿Usar audios de Google Drive?', [True, False])
-            #upload_files_drive = ask_user_option('¿Subir archivos a Google Drive?', [True, False]) 
-            #upload_files_youtube = ask_user_option('¿Subir archivos a YouTube?', [True, False]) 
+    def print_variable_state(name, value):
+        # Prints the state of a boolean variable in red or green
+        state_color = Fore.GREEN if value else Fore.RED  # Green if True, Red if False
+        print(f'{name}: {state_color}{value}{Style.RESET_ALL}')
 
-    def imprimir_estado_variable(nombre, valor):
-        # Imprime el estado de una variable booleana en color rojo o verde
-        estado_color = Fore.GREEN if valor else Fore.RED  # Verde si True, Rojo si False
-        print(f'{nombre}: {estado_color}{valor}{Style.RESET_ALL}')
-
-    def mostrar_datos_iniciales():
+    def show_initial_data():
         print("\n" + "="*50)
-        print("REVISAR ANTES DE COMENZAR:")
+        print("CHECK BEFORE STARTING:")
         print("="*50)
 
-        # Datos generales del render
-        print(f'Tipo de render: {render_type}')
-        print(f'Resolución: {resolution}')
+        # General render data
+        print(f'Render type: {render_type}')
+        print(f'Resolution: {resolution}')
         print(f'FPS: {fps}')
         print(f'Video bitrate: {video_bitrate}')
         print(f'Audio quality: {audio_quality}')
-        print(f'Duración del fade: {fade_duration}')
+        print(f'Fade duration: {fade_duration}')
         print(f'Encoder: {encoder}')
-        print(f'Calidad: {quality_level}')
+        print(f'Quality level: {quality_level}')
         print(f'Aspect ratio: {aspect_ratio}')
 
-        # Uso de APIs
-        print("\nUSO DE APIs:")
+        # API usage
+        print("\nAPI USAGE:")
         if render_type in ['render_image_massive', 'render_image']:
-            imprimir_estado_variable('Usando API imágenes DEZGO', use_api_DEZGO)
+            print_variable_state('Using DEZGO image API', use_api_DEZGO)
             if use_api_DEZGO:
-                print(f'Cantidad de imágenes a generar: {api_execution}')
-                print(f'Prompt de imágenes: {api_prompt}')
+                print(f'Number of images to generate: {api_execution}')
+                print(f'Image prompt (use | to separate different prompts): {api_prompt}')
 
-        imprimir_estado_variable('Usando API Suno', use_suno_api)
+        print_variable_state('Using Suno API', use_suno_api)
         if use_suno_api:
-            print(f'Prompt de API Suno: {suno_prompt}')
-            print(f'Cantidad de audios a generar (x2): {suno_execution * 2}')
+            print(f'Suno API prompt (use | to separate different prompts): {suno_prompt}')
+            print(f'Number of audios to generate (x2): {suno_execution * 2}')
 
-        # Otras configuraciones
-        print("\nOTRAS CONFIGURACIONES:")
-        imprimir_estado_variable('Usando nombres aleatorios', randomize_name)
-        imprimir_estado_variable('Usando audios aleatorios', randomize_audios)
+        # Other settings
+        print("\nOTHER SETTINGS:")
+        print_variable_state('Using random names', randomize_name)
+        print_variable_state('Using random audios', randomize_audios)
 
         if render_type in ['render_video', 'render_video_massive']:
-            imprimir_estado_variable('Invertir video', invert_video)
+            print_variable_state('Invert video', invert_video)
 
         if overlay:
-            imprimir_estado_variable('Usando overlay', overlay)
-            print(f'Nombre del overlay: {overlay_name}')
-            print(f'Opacidad del overlay: {opacity}')
-            print(f'Modo de mezcla: {blend_mode}')
+            print_variable_state('Using overlay', overlay)
+            print(f'Overlay name: {overlay_name}')
+            print(f'Overlay opacity: {opacity}')
+            print(f'Blend mode: {blend_mode}')
 
         print("\n" + "="*50)
-        print("REVISAR ANTES DE COMENZAR")
+        print("CHECK BEFORE STARTING")
         print("="*50)
 
-    # Lógica del flujo principal
+    # Main flow logic
     if render_type == "upload_youtube":
-        print(f'Seleccionaste subir todos los videos finales a YouTube')
+        print(f'You selected to upload all final videos to YouTube')
     elif render_type == "generate_images":
-        print(f'Seleccionaste generar imágenes')
+        print(f'You selected to generate images')
         use_api_DEZGO = True
-        api_prompt = input('Ingresa el prompt de la API (con | puedes separar diferentes prompts): ')
-        api_execution = int(input('Ingresa la cantidad de imágenes a crear con la API: '))
+        api_prompt = input('Enter the API prompt (use | to separate different prompts): ')
+        api_execution = int(input('Enter the number of images to create with the API: '))
         print("\n" + "="*50)
-        print("REVISAR ANTES DE COMENZAR")
+        print("CHECK BEFORE STARTING")
         print("="*50)
-        imprimir_estado_variable('Usando API imágenes DEZGO', use_api_DEZGO)
-        print(f'Prompt de imágenes: {api_prompt}')
-        print(f'Ejecuciones de API imágenes: {api_execution}')
+        print_variable_state('Using DEZGO image API', use_api_DEZGO)
+        print(f'Image prompt: {api_prompt}')
+        print(f'API image executions: {api_execution}')
         print("\n" + "="*50)
-        print("REVISAR ANTES DE COMENZAR")
+        print("CHECK BEFORE STARTING")
         print("="*50)
     elif render_type == "generate_audios":
-        print(f'Seleccionaste generar audios')
+        print(f'You selected to generate audios')
         use_suno_api = True
-        suno_prompt = input('Ingresa el prompt de la API Suno: ')
-        suno_execution = int(input('Ingresa la cantidad de audios a crear con la API Suno (Genera 2 audios por ejecución): '))
+        suno_prompt = input('Enter the Suno API prompt (use | to separate different prompts): :')
+        suno_execution = int(input('Enter the number of audios to create with the Suno API (Generates 2 audios per execution): '))
         print("\n" + "="*50)
-        print("REVISAR ANTES DE COMENZAR")
+        print("CHECK BEFORE STARTING")
         print("="*50)
-        imprimir_estado_variable('Usando API Suno', use_suno_api)
-        print(f'Prompt de API Suno: {suno_prompt}')
-        print(f'Ejecuciones de API Suno totales (X2): {suno_execution * 2}')
+        print_variable_state('Using Suno API', use_suno_api)
+        print(f'Suno API prompt: {suno_prompt}')
+        print(f'Total Suno API executions (x2): {suno_execution * 2}')
         print("\n" + "="*50)
-        print("REVISAR ANTES DE COMENZAR")
+        print("CHECK BEFORE STARTING")
         print("="*50)
-        
+
     print('\n')
     if not "generate_audios" in render_type and not "generate_images" in render_type and not "upload_youtube" in render_type:
-        mostrar_datos_iniciales()
+        show_initial_data()
 
-    init = ask_user_option('¿Quieres iniciar el render?', ['si, iniciar', 'no, detener'])
+    init = ask_user_option('Do you want to start the render?', ['yes, start', 'no, stop'])
 
-    if init.lower() == "si, iniciar":
+    if init.lower() == "yes, start":
         loading_effect()
         print('\n')
 
         if render_type == "generate_audios":
 
-            create_audios_from_api(suno_prompt, suno_execution, insrtumental, suno_wait_audio, audio_folder_path, base_api_suno_url)
+            create_audios_from_api(suno_prompt, suno_execution, instrumental, suno_wait_audio, audio_folder_path, base_api_suno_url)
         elif render_type == "generate_images":
-    
+
             create_images_ia(api_key, url_api, api_endpoint, api_prompt, api_width, api_height, api_sampler, api_model_id, api_negative_prompt, api_seed, api_format, api_guidance, api_transparent_background, api_execution, image_folder_path)
         elif render_type == "upload_youtube":
 
             upload_all_videos_to_youtube(final_video_folder)
         elif render_type == "render_video":
             if use_suno_api:
-                create_audios_from_api(suno_prompt, suno_execution, insrtumental, suno_wait_audio, audio_folder_path, base_api_suno_url)            
+                create_audios_from_api(suno_prompt, suno_execution, instrumental, suno_wait_audio, audio_folder_path, base_api_suno_url)            
             render_video(video_folder_path, audio_folder_path, combined_audio_folder, inverted_folder_path, final_video_folder, fade_duration, resolution, fps, video_bitrate, audio_quality, overlay_video, invert_video, encoder, quality_level, aspect_ratio, use_audios_drive, upload_files_drive, upload_files_youtube, randomize_audios, randomize_name, overlay, opacity, blend_mode, preset, pix_fmt, cores)
         elif render_type == "render_image":
             if use_suno_api:
-                create_audios_from_api(suno_prompt, suno_execution, insrtumental, suno_wait_audio, audio_folder_path, base_api_suno_url)
+                create_audios_from_api(suno_prompt, suno_execution, instrumental, suno_wait_audio, audio_folder_path, base_api_suno_url)
             render_image(audio_folder_path, image_folder_path, combined_audio_folder, final_video_folder, fade_duration, resolution, fps, video_bitrate, audio_quality, overlay_video, use_api_DEZGO, api_prompt, api_execution, encoder, quality_level, aspect_ratio, use_audios_drive, upload_files_drive, upload_files_youtube, randomize_audios, randomize_name, overlay, opacity, blend_mode, preset, pix_fmt, cores)
         elif render_type == "render_image_massive":
             if use_suno_api:
-                create_audios_from_api(suno_prompt, suno_execution, insrtumental, suno_wait_audio, audio_folder_path, base_api_suno_url)
+                create_audios_from_api(suno_prompt, suno_execution, instrumental, suno_wait_audio, audio_folder_path, base_api_suno_url)
             render_massive_images(audio_folder_path, image_folder_path, combined_audio_folder, final_video_folder, fade_duration, resolution, fps, video_bitrate, audio_quality, overlay_video, use_api_DEZGO, api_prompt, api_execution, encoder, quality_level, aspect_ratio, use_audios_drive, upload_files_drive, upload_files_youtube, randomize_audios, randomize_name, overlay, opacity, blend_mode, preset, pix_fmt, cores)
         elif render_type == "render_video_massive":
             if use_suno_api:
-                create_audios_from_api(suno_prompt, suno_execution, insrtumental, suno_wait_audio, audio_folder_path, base_api_suno_url)
+                create_audios_from_api(suno_prompt, suno_execution, instrumental, suno_wait_audio, audio_folder_path, base_api_suno_url)
             render_massive_videos(audio_folder_path, video_folder_path, combined_audio_folder, inverted_folder_path, final_video_folder, fade_duration, resolution, fps, video_bitrate, audio_quality, overlay_video, invert_video, encoder, quality_level, aspect_ratio, use_audios_drive, upload_files_drive, upload_files_youtube, randomize_audios, randomize_name, overlay, opacity, blend_mode, preset, pix_fmt, cores)
 
     else:
-        print("Proceso cancelado.")
+        print("Process canceled.")
         return
-    
-    print("Proceso terminado.")
+
+    print("Process finished.")
     return
 
 start_render()
