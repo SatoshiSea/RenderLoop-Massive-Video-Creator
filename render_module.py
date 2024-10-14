@@ -40,7 +40,7 @@ privacy_status = ""  # Estado de privacidad del video (Ej. unlisted para no list
 #datos para ejecutar la api DEZGO
 url_api = "https://api.dezgo.com/"
 api_key = "DEZGO-820FA4D500D9754DDE2A6E6B9E3DD5BBF28160EA20654895CE9A0F89E30406F7E1AA4C62"
-api_endpoint = "text2image_sdxl_lightning"
+api_endpoint ="text2image_flux"
 api_width = 1385
 api_height = 735
 api_sampler = "auto"
@@ -722,55 +722,78 @@ def download_audio(audio_url, file_name, save_path):
 ################## FUNCIONES Dezgo ################
 
 # funcion para generar imagenes masivas con dezgo mediante su api
+import re
+
 def create_images_ia(api_key, url_api, api_endpoint, api_prompt, api_width, api_height, api_sampler, api_model_id, api_negative_prompt, api_seed, api_format, api_guidance, api_transparent_background, api_execution, image_folder_path, retry_delay=5, max_retries=3):
     url = f"{url_api}/{api_endpoint}"
     headers = {
         'X-Dezgo-Key': api_key
     }
-    files = {
-        'prompt': (None, api_prompt),
-        'width': (None, str(api_width)),
-        'height': (None, str(api_height)),
-        'sampler': (None, api_sampler),
-        'model': (None, api_model_id),
-        'negative_prompt': (None, api_negative_prompt),
-        'seed': (None, api_seed),
-        'format': (None, api_format),
-        'guidance': (None, str(api_guidance)),
-        'transparent_background': (None, str(api_transparent_background).lower())
-    }
 
-    for i in range(int(api_execution)):
-        success = False
-        attempts = 0
-        while not success and attempts < max_retries:
-            try:
-                response = requests.post(url, headers=headers, files=files)
-                response.raise_for_status()  # Raise an exception for bad status codes (4xx or 5xx)
+    # Dividir los prompts por el separador "|"
+    prompts = api_prompt.split('|')
+    num_prompts = len(prompts)
+    
+    # Calcular cuántas imágenes por prompt
+    images_per_prompt = int(api_execution) // num_prompts
+    remaining_images = int(api_execution) % num_prompts  # Para distribuir el resto
 
-                if response.status_code == 200:
-                    print(f'Solicitud {i+1} exitosa')
-                    # Guardar la imagen en image_folder_path
-                    image_path = os.path.join(image_folder_path, f'image_{i+1}.jpg')
-                    with open(image_path, 'wb') as f:
-                        f.write(response.content)
-                        print(f'Imagen guardada en: {image_path}')
-                    success = True
-                else:
-                    print(f'Error en la solicitud {i+1}: {response.status_code}, {response.text}')
+    image_count = 0
+    for idx, prompt in enumerate(prompts):
+        # Ajustar el número de imágenes para los primeros prompts si hay imágenes restantes
+        num_images = images_per_prompt + (1 if idx < remaining_images else 0)
+
+        # Limpiar el prompt para usarlo como parte del nombre de archivo
+        clean_prompt = re.sub(r'[^\w\s-]', '', prompt).strip().replace(' ', '_')  # Elimina caracteres no permitidos y reemplaza espacios por guiones bajos
+
+        for i in range(num_images):
+            success = False
+            attempts = 0
+            files = {
+                'prompt': (None, prompt),
+                'width': (None, str(api_width)),
+                'height': (None, str(api_height)),
+                #'sampler': (None, api_sampler),
+                #'model': (None, api_model_id),
+                #'negative_prompt': (None, api_negative_prompt),
+                'steps': 5,
+                'seed': (None, api_seed),
+                'format': (None, api_format),
+                #'guidance': (None, str(api_guidance)),
+                'transparent_background': (None, str(api_transparent_background).lower())
+            }
+
+            while not success and attempts < max_retries:
+                try:
+                    response = requests.post(url, headers=headers, files=files)
+                    response.raise_for_status()  # Levanta una excepción en códigos 4xx o 5xx
+
+                    if response.status_code == 200:
+                        image_count += 1
+                        print(f'Solicitud exitosa para prompt {idx+1}, imagen {image_count}')
+                        # Guardar la imagen en image_folder_path con el nombre del prompt original
+                        image_filename = f'{clean_prompt}_{i+1}.jpg'
+                        image_path = os.path.join(image_folder_path, image_filename)
+                        with open(image_path, 'wb') as f:
+                            f.write(response.content)
+                            print(f'Imagen guardada en: {image_path}')
+                        success = True
+                    else:
+                        print(f'Error en la solicitud de imagen {image_count}: {response.status_code}, {response.text}')
+                        attempts += 1
+                        if attempts < max_retries:
+                            print(f'Reintentando en {retry_delay} segundos...')
+                            time.sleep(retry_delay)
+                except requests.exceptions.RequestException as e:
+                    print(f'Error en la solicitud: {e}')
                     attempts += 1
                     if attempts < max_retries:
                         print(f'Reintentando en {retry_delay} segundos...')
                         time.sleep(retry_delay)
-            except requests.exceptions.RequestException as e:
-                print(f'Error en la solicitud: {e}')
-                attempts += 1
-                if attempts < max_retries:
-                    print(f'Reintentando en {retry_delay} segundos...')
-                    time.sleep(retry_delay)
 
-        if not success:
-            print(f'No se pudo completar la solicitud {i+1} después de {max_retries} intentos.')
+            if not success:
+                print(f'No se pudo completar la solicitud de imagen {image_count} después de {max_retries} intentos.')
+
 
 ################## FUNCIONES DRIVE ################
 
@@ -1114,13 +1137,13 @@ def start_render():
 
     invert_video = True # True o False
 
-    encoder = "h264_qsv" # 'libx264','h264_nvenc','h264_qsv','h264_amf','h264_videotoolbox'
+    encoder = "h264_videotoolbox" # 'libx264','h264_nvenc','h264_qsv','h264_amf','h264_videotoolbox'
     quality_level = 3  # 1 es la mejor calidad, 3 es la más baja calidad
 
     # Api para crear imagenes
     use_api_DEZGO = False # True o False
-    api_prompt = "manantial Landscape realistic 4k high quality" # prompt de la api
-    api_execution = 22 # cantidad de imagenes que se crearan con la api
+    api_prompt = "magic Landscape tokyo realistic 4k high quality" # prompt de la api
+    api_execution = 19 # cantidad de imagenes que se crearan con la api
 
     # Variables de configuración suno
     use_suno_api = False
@@ -1314,7 +1337,7 @@ def start_render():
     elif render_type == "generate_images":
         print(f'Seleccionaste generar imágenes')
         use_api_DEZGO = True
-        api_prompt = input('Ingresa el prompt de la API: ')
+        api_prompt = input('Ingresa el prompt de la API (con | puedes separar diferentes prompts): ')
         api_execution = int(input('Ingresa la cantidad de imágenes a crear con la API: '))
         print("\n" + "="*50)
         print("REVISAR ANTES DE COMENZAR")
@@ -1341,8 +1364,8 @@ def start_render():
         print("="*50)
         
     print('\n')
-    if render_type != "generate_audios" or not "upload_youtube" or not "generate_images":
-            mostrar_datos_iniciales()
+    if not "generate_audios" in render_type and not "generate_images" in render_type and not "upload_youtube" in render_type:
+        mostrar_datos_iniciales()
 
     init = ask_user_option('¿Quieres iniciar el render?', ['si, iniciar', 'no, detener'])
 
