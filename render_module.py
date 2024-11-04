@@ -19,6 +19,7 @@ import random
 from urllib.parse import urlparse
 from colorama import init, Fore, Style
 import re
+from datetime import timedelta
 
 # Inicializa colorama
 init(autoreset=True)
@@ -192,6 +193,7 @@ def get_audio_duration(file_path):
 
 # Render Images
 
+
 def render_massive_images(audio_folder_path, image_folder_path, combined_audio_folder, final_video_folder, fade_duration, resolution, fps, video_bitrate, audio_quality, overlay_video, use_api_DEZGO, api_prompt, api_execution, encoder, quality_level, aspect_ratio, use_audios_drive, upload_files_drive, upload_files_youtube, randomize_audios, randomize_name, overlay, opacity, blend_mode, preset, pix_fmt, cores):
 
     if use_audios_drive:
@@ -227,6 +229,8 @@ def render_massive_images(audio_folder_path, image_folder_path, combined_audio_f
         print(f"Processing image {i + 1}/{num_images}: {image_file}")
 
         audio_segments = []
+        time_marker = timedelta(0)
+        timestamps = []
 
         for _ in range(audios_per_image):
             if audio_index < num_audios:
@@ -234,6 +238,12 @@ def render_massive_images(audio_folder_path, image_folder_path, combined_audio_f
                 audio_path = os.path.join(audio_folder_path, audio_file)
                 faded_audio = apply_fade(audio_path, fade_duration)
                 audio_segments.append(faded_audio)
+
+                # Add timestamp entry
+                duration = get_audio_duration(audio_path)
+                timestamps.append(f"{time_marker} - {audio_file}")
+                time_marker += timedelta(seconds=duration)
+
                 audio_index += 1
 
         if i < remaining_audios:
@@ -241,6 +251,12 @@ def render_massive_images(audio_folder_path, image_folder_path, combined_audio_f
             audio_path = os.path.join(audio_folder_path, audio_file)
             faded_audio = apply_fade(audio_path, fade_duration)
             audio_segments.append(faded_audio)
+
+            # Add timestamp entry
+            duration = get_audio_duration(audio_path)
+            timestamps.append(f"{time_marker} - {audio_file}")
+            time_marker += timedelta(seconds=duration)
+
             audio_index += 1
 
         combined_audio = concatenate_audios(audio_segments)
@@ -250,13 +266,22 @@ def render_massive_images(audio_folder_path, image_folder_path, combined_audio_f
         image_path = os.path.join(image_folder_path, image_file)
 
         if randomize_name:
-            output = os.path.join(final_video_folder, randomize_names() + '.mp4')
+            output_name = randomize_names() + '.mp4'
         else:
-            output = os.path.join(final_video_folder, os.path.splitext(image_file)[0] + '.mp4')
-
+            output_name = os.path.splitext(image_file)[0] + '.mp4'
+        
+        output = os.path.join(final_video_folder, output_name)
         print(f"Creating video {i + 1}/{num_images} with image {image_file} and combined audio.")
 
         finaly_image_render(image_path, combined_audio_path, output, resolution, fps, video_bitrate, audio_quality, overlay_video, overlay, opacity, blend_mode, preset, pix_fmt, encoder, quality_level, aspect_ratio, cores, upload_files_youtube)
+
+        # Save timestamps to a .txt file
+        txt_path = os.path.join(final_video_folder, os.path.splitext(output_name)[0] + '.txt')
+        with open(txt_path, 'w') as txt_file:
+            for line in timestamps:
+                txt_file.write(line + '\n')
+
+        print(f"Timestamp file created: {txt_path}")
 
     if upload_files_drive:
         print(f"Uploading files to drive in folder {FOLDER_UPLOAD_NAME}")
@@ -265,7 +290,7 @@ def render_massive_images(audio_folder_path, image_folder_path, combined_audio_f
         upload_files(service, folder_id_upload, FOLDER_UPLOAD_PATH)
     else:
         print("Files will not be uploaded, but they are saved in the 'out/videos' folder")
-        
+
 def render_image(audio_folder_path, image_folder_path, combined_audio_folder, final_video_folder, fade_duration, resolution, fps, video_bitrate, audio_quality, overlay_video, use_api_DEZGO, api_prompt, api_execution, encoder, quality_level, aspect_ratio, use_audios_drive, upload_files_drive, upload_files_youtube, randomize_audios, randomize_name, overlay, opacity, blend_mode, preset, pix_fmt, cores):
 
     if use_audios_drive:
@@ -286,10 +311,18 @@ def render_image(audio_folder_path, image_folder_path, combined_audio_folder, fi
         return
 
     audio_segments = []
+    time_marker = timedelta(0)
+    timestamps = []
+
     for audio_file in audio_files:
         audio_path = os.path.join(audio_folder_path, audio_file)
         faded_audio = apply_fade(audio_path, fade_duration)
         audio_segments.append(faded_audio)
+
+        # Add timestamp entry
+        duration = get_audio_duration(audio_path)
+        timestamps.append(f"{time_marker} - {audio_file}")
+        time_marker += timedelta(seconds=duration)
 
     if len(audio_segments) == 0:
         print("Not enough audios to create videos.")
@@ -310,12 +343,22 @@ def render_image(audio_folder_path, image_folder_path, combined_audio_folder, fi
     image_path = os.path.join(image_folder_path, image_file)
 
     if randomize_name:
-        output = os.path.join(final_video_folder, randomize_names() + '.mp4')
+        output_name = randomize_names() + '.mp4'
     else:
-        output = os.path.join(final_video_folder, os.path.splitext(image_file)[0] + '.mp4')
+        output_name = os.path.splitext(image_file)[0] + '.mp4'
+    
+    output = os.path.join(final_video_folder, output_name)
 
     finaly_image_render(image_path, combined_audio_path, output, resolution, fps, video_bitrate, audio_quality, overlay_video, overlay, opacity, blend_mode, preset, pix_fmt, encoder, quality_level, aspect_ratio, cores, upload_files_youtube)
+
+    # Save timestamps to a .txt file
+    txt_path = os.path.join(final_video_folder, os.path.splitext(output_name)[0] + '.txt')
+    with open(txt_path, 'w') as txt_file:
+        for line in timestamps:
+            txt_file.write(line + '\n')
     
+    print(f"Timestamp file created: {txt_path}")
+
     if upload_files_drive:
         print(f"Uploading files to drive in folder {FOLDER_UPLOAD_NAME}")
         service = authenticate()
@@ -323,7 +366,6 @@ def render_image(audio_folder_path, image_folder_path, combined_audio_folder, fi
         upload_files(service, folder_id_upload, FOLDER_UPLOAD_PATH)
     else:
         print("Files will not be uploaded, but they are saved in the 'out/videos' folder")
-
 
 def finaly_image_render(image_folder_path, combined_audio_folder, output, resolution, fps, video_bitrate, audio_quality, overlay_video, overlay, opacity, blend_mode, preset, pix_fmt, encoder, quality_level, aspect_ratio, cores, upload_files_youtube):
  
@@ -383,7 +425,6 @@ def finaly_image_render(image_folder_path, combined_audio_folder, output, resolu
         print(f"Rendering time: {elapsed_time / 60:.2f} minutes")
 
 # Render Videos
-
 def render_massive_videos(audio_folder_path, video_folder_path, combined_audio_folder, inverted_folder_path, final_video_folder, fade_duration, resolution, fps, video_bitrate, audio_quality, overlay_video, invert_video, encoder, quality_level, aspect_ratio, use_audios_drive, upload_files_drive, upload_files_youtube, randomize_audios, randomize_name, overlay, opacity, blend_mode, preset, pix_fmt, cores):
       
     if use_audios_drive:
@@ -415,18 +456,32 @@ def render_massive_videos(audio_folder_path, video_folder_path, combined_audio_f
         print(f"Processing video {i + 1}/{num_videos}: {video_file}")
 
         audio_segments = []
+        time_marker = timedelta(0)
+        timestamps = []
 
         for _ in range(audios_per_video):
             if audio_index < num_audios:
                 audio_path = os.path.join(audio_folder_path, audio_files[audio_index])
                 faded_audio = apply_fade(audio_path, fade_duration)
                 audio_segments.append(faded_audio)
+
+                # Add timestamp entry
+                duration = get_audio_duration(audio_path)
+                timestamps.append(f"{time_marker} - {audio_files[audio_index]}")
+                time_marker += timedelta(seconds=duration)
+
                 audio_index += 1
 
         if i < remaining_audios:
             audio_path = os.path.join(audio_folder_path, audio_files[audio_index])
             faded_audio = apply_fade(audio_path, fade_duration)
             audio_segments.append(faded_audio)
+
+            # Add timestamp entry
+            duration = get_audio_duration(audio_path)
+            timestamps.append(f"{time_marker} - {audio_files[audio_index]}")
+            time_marker += timedelta(seconds=duration)
+
             audio_index += 1
 
         combined_audio = concatenate_audios(audio_segments)
@@ -436,9 +491,11 @@ def render_massive_videos(audio_folder_path, video_folder_path, combined_audio_f
         video_path = os.path.join(video_folder_path, video_file)
 
         if randomize_name:
-            output = os.path.join(final_video_folder, randomize_names() + '.mp4')
+            output_name = randomize_names() + '.mp4'
         else:
-            output = os.path.join(final_video_folder, os.path.splitext(video_file)[0] + '.mp4')
+            output_name = os.path.splitext(video_file)[0] + '.mp4'
+
+        output = os.path.join(final_video_folder, output_name)
 
         if invert_video:
             inverted_video = os.path.join(inverted_folder_path, f'inverted_video_{i + 1}.mp4')
@@ -450,6 +507,13 @@ def render_massive_videos(audio_folder_path, video_folder_path, combined_audio_f
         else:
             finaly_video_render(video_path, combined_audio_path, output, resolution, fps, video_bitrate, audio_quality, overlay_video, overlay, opacity, blend_mode, encoder, preset, pix_fmt, aspect_ratio, cores, upload_files_youtube)
 
+        # Save timestamps to a .txt file
+        txt_path = os.path.join(final_video_folder, os.path.splitext(output_name)[0] + '.txt')
+        with open(txt_path, 'w') as txt_file:
+            for line in timestamps:
+                txt_file.write(line + '\n')
+
+        print(f"Timestamp file created: {txt_path}")
 
     if upload_files_drive:
          print(f"Uploading files to drive in folder {FOLDER_UPLOAD_NAME}")
@@ -479,10 +543,18 @@ def render_video(video_folder_path, audio_folder_path, combined_audio_folder, in
         return
 
     audio_segments = []
+    time_marker = timedelta(0)
+    timestamps = []
+
     for audio_file in audio_files:
         audio_path = os.path.join(audio_folder_path, audio_file)
         faded_audio = apply_fade(audio_path, fade_duration)
         audio_segments.append(faded_audio)
+
+        # Add timestamp entry
+        duration = get_audio_duration(audio_path)
+        timestamps.append(f"{time_marker} - {audio_file}")
+        time_marker += timedelta(seconds=duration)
 
     if not audio_segments:
         print("Audio files could not be processed.")
@@ -492,7 +564,6 @@ def render_video(video_folder_path, audio_folder_path, combined_audio_folder, in
     combined_audio_path = os.path.join(combined_audio_folder, 'combined_audio.mp3')
     combined_audio.export(combined_audio_path, format="mp3")
 
-    # Searching for a video file in the folder, regardless of the filename, that ends in .mp4, .avi, or .mkv
     video_file = [f for f in os.listdir(video_folder_path) if f.endswith(('.mp4', '.avi', '.mkv'))][0]
     if not video_file:
         print("No video files found.")
@@ -500,21 +571,29 @@ def render_video(video_folder_path, audio_folder_path, combined_audio_folder, in
     video_path = os.path.join(video_folder_path, video_file)
 
     if randomize_name:
-        output = os.path.join(final_video_folder, randomize_names() + '.mp4')
+        output_name = randomize_names() + '.mp4'
     else:
-        output = os.path.join(final_video_folder, os.path.splitext(video_file)[0] + '.mp4')
+        output_name = os.path.splitext(video_file)[0] + '.mp4'
+
+    output = os.path.join(final_video_folder, output_name)
 
     if invert_video:
         inverted_video = os.path.join(inverted_folder_path, 'inverted_video.mp4')
         invert_video_render(video_path, inverted_video, fps)
-        print(f"Inverted video: {inverted_video}")
         combined_video_path = os.path.join(inverted_folder_path, 'combined_video.mp4')
         command = ['ffmpeg', '-r', f'{fps}', '-i', video_path, '-r', f'{fps}', '-i', inverted_video, '-filter_complex', '[0:v][1:v]concat=n=2:v=1:a=0[out]', '-map', '[out]', combined_video_path]
         subprocess.run(command, check=True)
-        print(f"Combined video: {combined_video_path}")
         finaly_video_render(combined_video_path, combined_audio_path, output, resolution, fps, video_bitrate, audio_quality, overlay_video, overlay, opacity, blend_mode, encoder, preset, pix_fmt, aspect_ratio, cores, upload_files_youtube)
     else:
         finaly_video_render(video_path, combined_audio_path, output, resolution, fps, video_bitrate, audio_quality, overlay_video, overlay, opacity, blend_mode, encoder, preset, pix_fmt, aspect_ratio, cores, upload_files_youtube)
+
+    # Save timestamps to a .txt file
+    txt_path = os.path.join(final_video_folder, os.path.splitext(output_name)[0] + '.txt')
+    with open(txt_path, 'w') as txt_file:
+        for line in timestamps:
+            txt_file.write(line + '\n')
+
+    print(f"Timestamp file created: {txt_path}")
 
     if upload_files_drive:
          print(f"Uploading files to drive in folder {FOLDER_UPLOAD_NAME}")
@@ -523,7 +602,6 @@ def render_video(video_folder_path, audio_folder_path, combined_audio_folder, in
          upload_files(service, folder_id_upload, FOLDER_UPLOAD_PATH)
     else:
         print("Files will not be uploaded, but they are saved in the 'out/videos' folder")
-
 
 def finaly_video_render(video_folder_path, combined_audio_folder, output, resolution, fps, video_bitrate, audio_quality, overlay_video, overlay, opacity, blend_mode, encoder, preset, pix_fmt, aspect_ratio, cores, upload_files_youtube):
  
@@ -1137,7 +1215,7 @@ def start_render():
 
     invert_video = True # True or False
 
-    encoder = "h264_videotoolbox" # 'libx264','h264_nvenc','h264_qsv','h264_amf','h264_videotoolbox'
+    encoder = "h264_qsv" # 'libx264','h264_nvenc','h264_qsv','h264_amf','h264_videotoolbox'
     quality_level = 3  # 1 is the best quality, 3 is the lowest quality
 
     # API to create images
