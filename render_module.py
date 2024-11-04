@@ -594,70 +594,57 @@ def finaly_video_render(video_folder_path, combined_audio_folder, output, resolu
         print(f"Video {output} successfully created.")
         print(f"Rendering time: {elapsed_time / 60:.2f} minutes")
 
-################## SUNO FUNCTIONS ################
+################## FUNCIONES SUNO ################
 def create_audios_from_api(suno_prompt, suno_execution, instrumental, suno_wait_audio, audio_folder_path, base_api_suno_url):
-    # Split the prompts by '|'
-    prompts = suno_prompt.split('|')
-    num_prompts = len(prompts)
 
-    # Calculate how many executions per prompt
-    audios_per_prompt = int(suno_execution) // num_prompts
-    remaining_audios = int(suno_execution) % num_prompts  # To distribute remaining executions
+    for i in range(int(suno_execution)):
+        print(f"{Fore.CYAN}Creando audio (x2) {i+1} de {suno_execution}{Style.RESET_ALL}")
+        
+        data = generate_audio_by_prompt({
+            "prompt": suno_prompt,
+            "make_instrumental": instrumental,
+            "wait_audio": suno_wait_audio
+        }, base_api_suno_url)
 
-    audio_count = 0
-    for idx, prompt in enumerate(prompts):
-        # Adjust the number of executions for the first prompts if there are remaining executions
-        num_executions = audios_per_prompt + (1 if idx < remaining_audios else 0)
+        ids = f"{data[0]['id']},{data[1]['id']}"
+        print(f"{Fore.YELLOW}IDs generados: {ids}{Style.RESET_ALL}")
 
-        for i in range(num_executions):
-            audio_count += 1
-            print(f"{Fore.CYAN}Creating audio (x2) {audio_count} of {suno_execution} for prompt {idx+1}: {prompt}{Style.RESET_ALL}")
-            
-            data = generate_audio_by_prompt({
-                "prompt": prompt,
-                "make_instrumental": instrumental,
-                "wait_audio": suno_wait_audio
-            }, base_api_suno_url)
+        # Esperar hasta que los audios estén listos
+        for _ in range(60):
+            data = get_audio_information(ids)
+            if data[0]["status"] == 'complete' and data[1]["status"] == 'complete':
+                audio_url_1 = data[0]['audio_url']
+                audio_url_2 = data[1]['audio_url']
+                
+                # Extraer nombres de archivos desde las URLs
+                file_name_1 = f"{data[0]['title']}_1.mp3"
+                file_name_2 = f"{data[1]['title']}_2.mp3"
+                
+                unique_file_name_1 = ensure_unique_file_name(file_name_1, audio_folder_path)
+                unique_file_name_2 = ensure_unique_file_name(file_name_2, audio_folder_path)
 
-            ids = f"{data[0]['id']},{data[1]['id']}"
-            print(f"{Fore.YELLOW}Generated IDs: {ids}{Style.RESET_ALL}")
+                print(f"{Fore.GREEN}{data[0]['id']} ==> {audio_url_1}{Style.RESET_ALL}")
+                print(f"{Fore.GREEN}{data[1]['id']} ==> {audio_url_2}{Style.RESET_ALL}")
 
-            # Wait until audios are ready
-            for _ in range(60):
-                data = get_audio_information(ids)
-                if data[0]["status"] == 'complete' and data[1]["status"] == 'complete':
-                    audio_url_1 = data[0]['audio_url']
-                    audio_url_2 = data[1]['audio_url']
-                    
-                    # Extract file names from URLs and limit them to 20 characters
-                    file_name_1 = f"{data[0]['title'][:20]}_1.mp3"
-                    file_name_2 = f"{data[1]['title'][:20]}_2.mp3"
-                    
-                    unique_file_name_1 = ensure_unique_file_name(file_name_1, audio_folder_path)
-                    unique_file_name_2 = ensure_unique_file_name(file_name_2, audio_folder_path)
+                # Descargar los audios
+                download_audio(audio_url_1, unique_file_name_1, audio_folder_path)
+                download_audio(audio_url_2, unique_file_name_2, audio_folder_path)
 
-                    print(f"{Fore.GREEN}{data[0]['id']} ==> {audio_url_1}{Style.RESET_ALL}")
-                    print(f"{Fore.GREEN}{data[1]['id']} ==> {audio_url_2}{Style.RESET_ALL}")
+                # Verificar duración de los audios
+                duration_1 = get_audio_duration(os.path.join(audio_folder_path, unique_file_name_1))
+                duration_2 = get_audio_duration(os.path.join(audio_folder_path, unique_file_name_2))
 
-                    # Download the audios
-                    download_audio(audio_url_1, unique_file_name_1, audio_folder_path)
-                    download_audio(audio_url_2, unique_file_name_2, audio_folder_path)
+                if duration_1 < 60:
+                    print(f"{Fore.RED}Duración de {unique_file_name_1} demasiado corta, se eliminará{Style.RESET_ALL}")
+                    os.remove(os.path.join(audio_folder_path, unique_file_name_1))
+                if duration_2 < 60:
+                    print(f"{Fore.RED}Duración de {unique_file_name_2} demasiado corta, se eliminará{Style.RESET_ALL}")
+                    os.remove(os.path.join(audio_folder_path, unique_file_name_2))
 
-                    # Check audio durations
-                    duration_1 = get_audio_duration(os.path.join(audio_folder_path, unique_file_name_1))
-                    duration_2 = get_audio_duration(os.path.join(audio_folder_path, unique_file_name_2))
-
-                    if duration_1 < 60:
-                        print(f"{Fore.RED}Duration of {unique_file_name_1} too short, it will be deleted{Style.RESET_ALL}")
-                        os.remove(os.path.join(audio_folder_path, unique_file_name_1))
-                    if duration_2 < 60:
-                        print(f"{Fore.RED}Duration of {unique_file_name_2} too short, it will be deleted{Style.RESET_ALL}")
-                        os.remove(os.path.join(audio_folder_path, unique_file_name_2))
-
-                    break
-                else:
-                    print(f"{Fore.MAGENTA}Waiting for audios to be completed...{Style.RESET_ALL}")
-                    time.sleep(20)
+                break
+            else:
+                print(f"{Fore.MAGENTA}Esperando que los audios estén completos...{Style.RESET_ALL}")
+                time.sleep(20)
 
 def ensure_unique_file_name(file_name, folder_path):
 
@@ -1285,7 +1272,7 @@ def start_render():
 
             use_suno_api = ask_user_option('Use the Suno API to create audios?', [True, False])
             if use_suno_api:
-                suno_prompt = input('Enter the Suno API prompt (use | to separate different prompts):')
+                suno_prompt = input('Enter the Suno API prompt:')
                 suno_execution = int(input('Enter the number of audios to create with the Suno API (Generates 2 audios per execution): '))
 
     def print_variable_state(name, value):
@@ -1319,7 +1306,7 @@ def start_render():
 
         print_variable_state('Using Suno API', use_suno_api)
         if use_suno_api:
-            print(f'Suno API prompt (use | to separate different prompts): {suno_prompt}')
+            print(f'Suno API prompt: {suno_prompt}')
             print(f'Number of audios to generate (x2): {suno_execution * 2}')
 
         # Other settings
@@ -1360,7 +1347,7 @@ def start_render():
     elif render_type == "generate_audios":
         print(f'You selected to generate audios')
         use_suno_api = True
-        suno_prompt = input('Enter the Suno API prompt (use | to separate different prompts): :')
+        suno_prompt = input('Enter the Suno API prompt: ')
         suno_execution = int(input('Enter the number of audios to create with the Suno API (Generates 2 audios per execution): '))
         print("\n" + "="*50)
         print("CHECK BEFORE STARTING")
