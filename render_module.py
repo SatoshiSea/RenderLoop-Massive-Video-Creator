@@ -241,7 +241,7 @@ def render_massive_images(audio_folder_path, image_folder_path, combined_audio_f
 
                 # Add timestamp entry
                 duration = get_audio_duration(audio_path)
-                timestamps.append(f"{time_marker} - {audio_file}")
+                timestamps.append(f"{time_marker.seconds // 3600:02}:{(time_marker.seconds // 60) % 60:02}:{time_marker.seconds % 60:02} - {audio_file}")
                 time_marker += timedelta(seconds=duration)
 
                 audio_index += 1
@@ -254,7 +254,7 @@ def render_massive_images(audio_folder_path, image_folder_path, combined_audio_f
 
             # Add timestamp entry
             duration = get_audio_duration(audio_path)
-            timestamps.append(f"{time_marker} - {audio_file}")
+            timestamps.append(f"{time_marker.seconds // 3600:02}:{(time_marker.seconds // 60) % 60:02}:{time_marker.seconds % 60:02} - {audio_file}")
             time_marker += timedelta(seconds=duration)
 
             audio_index += 1
@@ -321,7 +321,7 @@ def render_image(audio_folder_path, image_folder_path, combined_audio_folder, fi
 
         # Add timestamp entry
         duration = get_audio_duration(audio_path)
-        timestamps.append(f"{time_marker} - {audio_file}")
+        timestamps.append(f"{time_marker.seconds // 3600:02}:{(time_marker.seconds // 60) % 60:02}:{time_marker.seconds % 60:02} - {audio_file}")
         time_marker += timedelta(seconds=duration)
 
     if len(audio_segments) == 0:
@@ -553,7 +553,8 @@ def render_video(video_folder_path, audio_folder_path, combined_audio_folder, in
 
         # Add timestamp entry
         duration = get_audio_duration(audio_path)
-        timestamps.append(f"{time_marker} - {audio_file}")
+        timestamps.append(f"{time_marker.seconds // 3600:02}:{(time_marker.seconds // 60) % 60:02}:{time_marker.seconds % 60:02} - {audio_file}")
+
         time_marker += timedelta(seconds=duration)
 
     if not audio_segments:
