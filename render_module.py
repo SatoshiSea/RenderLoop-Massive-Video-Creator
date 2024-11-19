@@ -20,28 +20,30 @@ from urllib.parse import urlparse
 from colorama import init, Fore, Style
 import re
 from datetime import timedelta
+import configparser
 
 # Inicializa colorama
 init(autoreset=True)
 
+config = configparser.ConfigParser()
+config.read('config.ini')
+
 ############## VARIABLES ##############
 
-# Definir ruta base
 base_path = os.path.dirname(os.path.abspath(__file__))
-cores = os.cpu_count() # Cantidad de procesadores disponibles
+cores = os.cpu_count() 
 
-# Endpoint suno api
 base_api_suno_url = 'http://localhost:3000'
 
 # Variables de YouTube
-description = ""  # Descripción opcional del video
-tags = []  # Etiquetas opcionales del video
-category_id = ""  # ID de la categoría del video (Ej. 10 para Música)
-privacy_status = ""  # Estado de privacidad del video (Ej. unlisted para no listado)
+description = "" 
+tags = [] 
+category_id = ""  
+privacy_status = "" 
 
 #datos para ejecutar la api DEZGO
 url_api = "https://api.dezgo.com/"
-api_key = "DEZGO-EF5AF98400D97B80A918240CBF4A5DFC08444CE2B66F58414F509A6D429293351D57FD46"
+api_key = config["API_DEZGO"]
 api_endpoint ="text2image_flux"
 api_width = 1385
 api_height = 735
